@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Anime, Episode, WatchStatus } from '../types/anime';
 import { useApp } from '../context/AppContext';
+import { getAnimeAniListId } from '../utils/animeData';
+import { fetchMediaIndexEpisodes } from '../utils/mediaIndexApi';
 import {
   ArrowLeft,
   Search,
@@ -39,6 +41,29 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [watchedEpisodes, setWatchedEpisodes] = useState<Record<number, boolean>>({ 1: true, 2: true });
+  const [realEpisodes, setRealEpisodes] = useState<Episode[]>([]);
+
+  // Load real episodes from sanilili/media-index CDN using universal AniList ID resolver
+  useEffect(() => {
+    const numId = getAnimeAniListId(anime);
+    if (numId) {
+      fetchMediaIndexEpisodes(numId).then((eps) => {
+        if (eps && eps.length > 0) {
+          const mapped: Episode[] = eps.map((e) => ({
+            id: `${anime.id}-ep-${e.number}`,
+            number: e.number,
+            title: e.title || `Episode ${e.number}`,
+            durationSec: (e.runtime || anime.durationMins || 24) * 60,
+            thumbnail: e.still || anime.bannerImage || anime.posterImage,
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+            synopsis: e.overview,
+            airedDate: e.air_date
+          }));
+          setRealEpisodes(mapped);
+        }
+      });
+    }
+  }, [anime]);
 
   const currentWatchlistEntry = watchlist.find(w => w.animeId === anime.id);
   const watchStatus: WatchStatus = currentWatchlistEntry?.status || 'Watching';
@@ -50,7 +75,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     : 15;
 
   const activeSeason = anime.seasons[selectedSeasonIdx] || anime.seasons[0];
-  const allEpisodes = activeSeason?.episodes || [];
+  const allEpisodes = realEpisodes.length > 0 ? realEpisodes : (activeSeason?.episodes || []);
 
   const filteredEpisodes = allEpisodes
     .filter(ep => !episodeSearch.trim() || ep.title.toLowerCase().includes(episodeSearch.toLowerCase()) || `ep ${ep.number}`.includes(episodeSearch.toLowerCase()))
@@ -175,7 +200,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
 
           {/* ▶ Continue Button */}
           <button
-            onClick={() => playAnimeEpisode(anime, currentEpNum)}
+            onClick={() => {
+              onClose();
+              playAnimeEpisode(anime, currentEpNum);
+            }}
             className="flex-1 min-w-[160px] flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-purple-600/30 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
@@ -364,7 +392,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   return (
                     <div
                       key={ep.id}
-                      onClick={() => playAnimeEpisode(anime, ep.number)}
+                      onClick={() => {
+                        onClose();
+                        playAnimeEpisode(anime, ep.number);
+                      }}
                       className={`group flex ${
                         isGridView ? 'flex-col' : 'items-center'
                       } justify-between gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:bg-white/10 transition-all cursor-pointer`}

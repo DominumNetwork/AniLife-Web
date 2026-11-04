@@ -16,10 +16,12 @@ export const HeaderNav: React.FC = () => {
     activeTab,
     setActiveTab,
     activeProfile,
+    currentUser,
     setShowProfileModal,
     setShowSettingsModal,
     setShowRandomModal,
-    setShowNotificationsModal
+    setShowNotificationsModal,
+    setShowAuthModal
   } = useApp();
 
   const navItems = [
@@ -35,11 +37,22 @@ export const HeaderNav: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
         {/* Left Branding & Tabs */}
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
-          <div className="hidden lg:flex items-center mr-3 select-none">
-            <span className="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-300 to-indigo-300">
-              ANILILI
+          {/* Brand Logo & Title */}
+          <button
+            onClick={() => setActiveTab('home')}
+            className="flex items-center gap-2 mr-2 sm:mr-3 select-none cursor-pointer group shrink-0 focus:outline-none"
+            title="AniLife Home"
+            aria-label="AniLife Home"
+          >
+            <img
+              src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+              alt="AniLife Logo"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-md shadow-purple-950/60 group-hover:scale-105 transition-transform object-cover ring-1 ring-white/10"
+            />
+            <span className="hidden sm:inline-block text-lg sm:text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-300">
+              ANILIFE
             </span>
-          </div>
+          </button>
 
           <nav className="flex items-center gap-1 sm:gap-1.5" aria-label="Main Navigation">
             {navItems.map((item) => {
@@ -96,14 +109,49 @@ export const HeaderNav: React.FC = () => {
             <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
+          {/* AniList Sync & Account Button */}
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+              currentUser
+                ? 'bg-purple-900/40 hover:bg-purple-900/60 text-purple-200 border-purple-500/40 shadow-sm'
+                : 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/10'
+            }`}
+            title="AniList Account & Sync"
+          >
+            {currentUser ? (
+              <>
+                <img
+                  src={currentUser.avatar.medium}
+                  alt={currentUser.name}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+                <span className="truncate max-w-[90px]">{currentUser.name}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              </>
+            ) : (
+              <>
+                <span className="w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black text-white flex items-center justify-center">
+                  A
+                </span>
+                <span>Sign in</span>
+              </>
+            )}
+          </button>
+
           {/* Profile Badge */}
           <button
             onClick={() => setShowProfileModal(true)}
             title={`Switch Profile (${activeProfile.name})`}
             aria-label="Profile"
-            className="ml-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs sm:text-sm ring-2 ring-purple-400/50 hover:ring-purple-300 transition-all cursor-pointer shadow-md"
+            className="ml-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden ring-2 ring-purple-400/50 hover:ring-purple-300 transition-all cursor-pointer shadow-md flex items-center justify-center shrink-0"
+            style={{ backgroundColor: activeProfile.accentColor || '#F59E0B' }}
           >
-            {activeProfile.name.charAt(0).toUpperCase()}
+            {activeProfile.avatar ? (
+              <img src={activeProfile.avatar} alt={activeProfile.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-xs sm:text-sm">{activeProfile.name.charAt(0).toUpperCase()}</span>
+            )}
           </button>
         </div>
       </div>

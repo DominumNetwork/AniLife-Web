@@ -1,5 +1,5 @@
 /**
- * Anilili Player Utility Functions
+ * Anilife Player Utility Functions
  */
 
 export function formatTime(seconds: number): string {

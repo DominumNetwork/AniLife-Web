@@ -6,7 +6,7 @@ import {
   calculateProgressPercent,
   isWatched,
   clampSpeed
-} from './playerUtils.js';
+} from './playerUtils';
 
 test('formatTime correctly formats seconds', () => {
   assert.equal(formatTime(0), '00:00');

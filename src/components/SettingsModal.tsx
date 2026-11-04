@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { AppSettings } from '../types/anime';
+import { AppSettings, ThemePresetName } from '../types/anime';
+import { SERVERS } from '../utils/animeData';
+import { THEME_PRESETS } from '../utils/storage';
 import {
   ArrowLeft,
   X,
@@ -16,46 +18,120 @@ import {
   RotateCcw,
   Download,
   Upload,
-  ExternalLink
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Layers,
+  Sliders,
+  Eye,
+  EyeOff,
+  LogOut,
+  RefreshCw,
+  ChevronRight,
+  Play
 } from 'lucide-react';
+import { EnabledServersModal } from './EnabledServersModal';
 
 export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { settings, updateSettings } = useApp();
+  const {
+    settings,
+    updateSettings,
+    applyThemePreset,
+    currentUser,
+    oauthToken,
+    setShowAuthModal,
+    logoutFromAniList,
+    syncAniList,
+    isSyncingAniList,
+    playIntroAnimation
+  } = useApp();
 
   const [activeSection, setActiveSection] = useState<
-    'player' | 'subtitles' | 'accounts' | 'appearance' | 'content' | 'servers' | 'data' | 'about'
+    'appearance' | 'player' | 'subtitles' | 'servers' | 'accounts' | 'content' | 'data' | 'about'
   >('appearance');
 
-  const themeSwatches = [
-    { name: 'Purple', hex: '#8B5CF6' },
-    { name: 'Lavender', hex: '#C084FC' },
-    { name: 'Sky', hex: '#38BDF8' },
-    { name: 'Cyan', hex: '#06B6D4' },
-    { name: 'Emerald', hex: '#10B981' },
-    { name: 'Amber', hex: '#F59E0B' },
-    { name: 'Rose', hex: '#F43F5E' },
-    { name: 'Coral', hex: '#FB7185' },
+  const [customBackdropUrl, setCustomBackdropUrl] = useState('');
+  const [dataMessage, setDataMessage] = useState<string | null>(null);
+  const [showEnabledServersModal, setShowEnabledServersModal] = useState(false);
+
+  const presetsList = Object.keys(THEME_PRESETS) as ThemePresetName[];
+
+  const popularAnimeBackdrops = [
+    { title: 'The Apothecary Diaries', url: 'https://image.tmdb.org/t/p/w1280/tka5fcGkFclwf3brgUZunXHIwAg.jpg' },
+    { title: 'Dandadan', url: 'https://image.tmdb.org/t/p/w1280/dbkN1Nmj0pbL9sjjL0ePHzBtDZB.jpg' },
+    { title: 'Frieren: Beyond Journey\'s End', url: 'https://image.tmdb.org/t/p/w1280/3PwfWIlXvHTrSCRFvQvHdaDRQiL.jpg' },
+    { title: 'Jujutsu Kaisen', url: 'https://image.tmdb.org/t/p/w1280/9jPiGnf6EH7VVKm720vpk865Yqn.jpg' },
+    { title: 'Demon Slayer', url: 'https://image.tmdb.org/t/p/w1280/GnIGBoBoniawSmEy4XWuzFwarO.jpg' },
+    { title: 'Attack on Titan', url: 'https://image.tmdb.org/t/p/w1280/1v0d63laCR7iMSGBPREYHTE69IQ.jpg' },
   ];
 
   const handleExportData = () => {
     const backup = {
       settings,
       timestamp: new Date().toISOString(),
-      app: 'Anilili Web',
-      version: '0.1.84'
+      app: 'Anilife Web',
+      version: '2.4.0',
+      anilistUser: currentUser?.name || null
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `anilili_backup_${Date.now()}.json`;
+    a.download = `anilife_backup_${Date.now()}.json`;
     a.click();
+    showNotice('Backup exported successfully');
+  };
+
+  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed.settings) {
+          updateSettings(parsed.settings);
+          showNotice('Settings restored from backup');
+        }
+      } catch {
+        alert('Invalid backup file');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const showNotice = (msg: string) => {
+    setDataMessage(msg);
+    setTimeout(() => setDataMessage(null), 3000);
+  };
+
+  // Reordering server priority
+  const moveServer = (index: number, direction: 'up' | 'down') => {
+    const currentPriority = settings.serverPriority || SERVERS.map(s => s.id);
+    const newIdx = direction === 'up' ? index - 1 : index + 1;
+    if (newIdx < 0 || newIdx >= currentPriority.length) return;
+    const copy = [...currentPriority];
+    const temp = copy[index];
+    copy[index] = copy[newIdx];
+    copy[newIdx] = temp;
+    updateSettings({ serverPriority: copy });
+  };
+
+  const toggleServerEnabled = (serverId: string) => {
+    const enabled = settings.enabledServers || SERVERS.map(s => s.id);
+    if (enabled.includes(serverId)) {
+      if (enabled.length <= 1) return; // keep at least 1
+      updateSettings({ enabledServers: enabled.filter(id => id !== serverId) });
+    } else {
+      updateSettings({ enabledServers: [...enabled, serverId] });
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn flex flex-col font-sans">
       {/* Top Navbar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/70 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/75 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
@@ -64,7 +140,10 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-lg font-bold text-white capitalize">{activeSection}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black text-white capitalize">{activeSection}</h2>
+            <span className="text-xs text-zinc-400 font-semibold">• Settings</span>
+          </div>
         </div>
 
         <button
@@ -75,17 +154,23 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         </button>
       </div>
 
+      {dataMessage && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full bg-purple-600 text-white font-bold text-xs shadow-2xl shadow-purple-600/50">
+          {dataMessage}
+        </div>
+      )}
+
       <div className="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col md:flex-row gap-6">
         {/* Navigation Sidebar Tabs */}
         <div className="w-full md:w-56 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-2 md:pb-0">
           {[
             { id: 'appearance', label: 'Appearance', icon: Palette },
             { id: 'player', label: 'Player', icon: PlaySquare },
-            { id: 'subtitles', label: 'Subtitles', icon: Subtitles },
+            { id: 'subtitles', label: 'Subtitles & Audio', icon: Subtitles },
+            { id: 'servers', label: 'Servers & Sources', icon: Server },
             { id: 'accounts', label: 'Accounts & Sync', icon: UserCheck },
             { id: 'content', label: 'Content', icon: Shield },
-            { id: 'servers', label: 'Servers', icon: Server },
-            { id: 'data', label: 'Data', icon: Database },
+            { id: 'data', label: 'Data & Storage', icon: Database },
             { id: 'about', label: 'About', icon: Info },
           ].map((item) => {
             const Icon = item.icon;
@@ -109,10 +194,12 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
         {/* Active Section Content */}
         <div className="flex-1 space-y-6">
-          {/* SECTION: APPEARANCE (Matching screenshot 215004 & 215014) */}
+          {/* ======================================================== */}
+          {/* 1. APPEARANCE (Anilili ThemePresets & Canvas)            */}
+          {/* ======================================================== */}
           {activeSection === 'appearance' && (
             <div className="space-y-6 animate-fadeIn">
-              {/* LIVE PREVIEW CARD (Matching screenshot 215004) */}
+              {/* LIVE PREVIEW CARD */}
               <div className="p-5 rounded-3xl bg-[#14121e] border border-white/10 shadow-2xl space-y-4">
                 <div className="flex items-center gap-2">
                   <span
@@ -123,7 +210,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   </span>
                   <span
                     className="px-3 py-1 rounded-full text-xs font-bold text-white/90"
-                    style={{ backgroundColor: `${settings.accentColor}bb` }}
+                    style={{ backgroundColor: `${settings.accentColor}cc` }}
                   >
                     Save
                   </span>
@@ -134,373 +221,718 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     Dub
                   </span>
                 </div>
-
-                <div>
-                  <h4 className="font-bold text-sm text-white">Episode 12 • The Journey Continues</h4>
-                  <p className="text-xs text-zinc-400">24 min • Sub and dub • Aired 2 days ago</p>
-                </div>
-
-                {/* Progress bar in preview */}
-                <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{ width: '65%', backgroundColor: settings.accentColor }}
-                  />
-                </div>
-
-                {/* Swatches preview dots */}
-                <div className="flex items-center gap-2 pt-1">
-                  {themeSwatches.slice(0, 5).map(s => (
-                    <span
-                      key={s.hex}
-                      className="w-3.5 h-3.5 rounded-full inline-block"
-                      style={{ backgroundColor: s.hex }}
-                    />
-                  ))}
+                <div className="space-y-1">
+                  <div className="text-sm font-bold text-white">
+                    Theme: {settings.themePreset || 'Midnight'}
+                  </div>
+                  <div className="text-xs text-zinc-400">
+                    Canvas: {settings.canvasBackground === 'amoled' ? 'AMOLED pure black (#000000)' : 'Dark gray (#121214)'}
+                  </div>
                 </div>
               </div>
 
               {/* THEME PRESETS */}
               <div className="space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                  Theme Presets
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {themeSwatches.map((th) => {
-                    const isSelected = settings.accentColor === th.hex;
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  THEME PRESETS (11 STYLES)
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {presetsList.map((preset) => {
+                    const isSelected = settings.themePreset === preset;
+                    const meta = THEME_PRESETS[preset];
                     return (
                       <button
-                        key={th.name}
-                        onClick={() => updateSettings({ accentColor: th.hex })}
-                        className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                        key={preset}
+                        onClick={() => applyThemePreset(preset)}
+                        className={`flex items-center gap-3 p-3 rounded-2xl text-left transition-all cursor-pointer border ${
                           isSelected
-                            ? 'bg-white/10 border-purple-400 shadow-lg shadow-purple-600/20'
-                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                            ? 'bg-purple-600/30 border-purple-400 text-white shadow-lg'
+                            : 'bg-white/5 hover:bg-white/10 border-white/5 text-zinc-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span
-                            className="w-5 h-5 rounded-full shadow-md"
-                            style={{ backgroundColor: th.hex }}
-                          />
-                          {isSelected && <Check className="w-4 h-4 text-purple-400" />}
+                        <div
+                          className="w-5 h-5 rounded-full shrink-0 shadow-md ring-1 ring-white/20"
+                          style={{ backgroundColor: meta.accent }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-xs truncate">{preset}</div>
+                          <div className="text-[10px] text-zinc-400 capitalize">{meta.canvas}</div>
                         </div>
-                        <div className="font-bold text-xs text-white">{th.name}</div>
+                        {isSelected && <Check className="w-4 h-4 text-purple-400 shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* GRANULAR TOGGLES (Popups, Refresh spinner, Reset theme) */}
-              <div className="space-y-2 pt-2 divide-y divide-white/10 text-xs sm:text-sm">
-                <label className="py-3 flex items-center justify-between cursor-pointer">
-                  <div>
-                    <div className="font-semibold text-white">Popups</div>
-                    <div className="text-xs text-zinc-400">Blur the screen behind popups and sheets</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.glassPopups}
-                    onChange={(e) => updateSettings({ glassPopups: e.target.checked })}
-                    className="w-4 h-4 accent-purple-500 rounded"
-                  />
-                </label>
-
-                <label className="py-3 flex items-center justify-between cursor-pointer">
-                  <div>
-                    <div className="font-semibold text-white">Refresh spinner</div>
-                    <div className="text-xs text-zinc-400">The circle you pull down to reload a page</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.refreshSpinner}
-                    onChange={(e) => updateSettings({ refreshSpinner: e.target.checked })}
-                    className="w-4 h-4 accent-purple-500 rounded"
-                  />
-                </label>
-
-                <div className="py-3 flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-white">Reset theme</div>
-                    <div className="text-xs text-zinc-400">Back to AMOLED black and monochrome</div>
-                  </div>
-                  <button
-                    onClick={() => updateSettings({ accentColor: '#8B5CF6' })}
-                    className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs text-zinc-300 font-semibold cursor-pointer"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* SECTION: PLAYER (Matching screenshot 214833) */}
-          {activeSection === 'player' && (
-            <div className="space-y-4 divide-y divide-white/10 text-xs sm:text-sm animate-fadeIn">
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Show details when paused</div>
-                  <div className="text-xs text-zinc-400">After 15s paused. Off: pausing leaves picture alone</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.showDetailsWhenPaused}
-                  onChange={(e) => updateSettings({ showDetailsWhenPaused: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Auto-skip intro, recap and outro</div>
-                  <div className="text-xs text-zinc-400">Use provider or AniSkip timings when available</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.autoSkipIntro}
-                  onChange={(e) => updateSettings({ autoSkipIntro: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Skip filler episodes</div>
-                  <div className="text-xs text-zinc-400">Next and auto-play go to the next episode that isn't filler</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.skipFiller}
-                  onChange={(e) => updateSettings({ skipFiller: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Skip button</div>
-                  <div className="text-xs text-zinc-400">A one-press jump on the controls when a show has no skip timings</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.showSkipButton}
-                  onChange={(e) => updateSettings({ showSkipButton: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <div className="py-3 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-white">Skip button length</div>
-                  <div className="text-xs text-zinc-400">How far one press jumps</div>
-                </div>
-                <select
-                  value={settings.skipButtonLength}
-                  onChange={(e) => updateSettings({ skipButtonLength: Number(e.target.value) })}
-                  className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs text-white"
-                >
-                  <option value={85} className="bg-[#14121e]">85s</option>
-                  <option value={90} className="bg-[#14121e]">90s</option>
-                  <option value={60} className="bg-[#14121e]">60s</option>
-                  <option value={30} className="bg-[#14121e]">30s</option>
-                </select>
-              </div>
-
-              <div className="py-3 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-white">Watched at</div>
-                  <div className="text-xs text-zinc-400">When an episode counts as watched</div>
-                </div>
-                <select
-                  value={settings.watchedThreshold}
-                  onChange={(e) => updateSettings({ watchedThreshold: Number(e.target.value) })}
-                  className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs text-white"
-                >
-                  <option value={80} className="bg-[#14121e]">80%</option>
-                  <option value={85} className="bg-[#14121e]">85%</option>
-                  <option value={90} className="bg-[#14121e]">90%</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* SECTION: SUBTITLES (Matching screenshot 214846) */}
-          {activeSection === 'subtitles' && (
-            <div className="space-y-4 divide-y divide-white/10 text-xs sm:text-sm animate-fadeIn">
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Show subtitles by default</div>
-                  <div className="text-xs text-zinc-400">Text baked into the video cannot be hidden</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.showSubtitlesByDefault}
-                  onChange={(e) => updateSettings({ showSubtitlesByDefault: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <label className="py-3 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Also on dubbed audio</div>
-                  <div className="text-xs text-zinc-400">Applies from the next episode</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.subtitlesOnDub}
-                  onChange={(e) => updateSettings({ subtitlesOnDub: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-
-              <div className="py-3 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-white">Preferred subtitle language</div>
-                  <div className="text-xs text-zinc-400">Which track to take when a source carries several</div>
-                </div>
-                <span className="text-purple-400 font-semibold">{settings.preferredSubLanguage}</span>
-              </div>
-            </div>
-          )}
-
-          {/* SECTION: ACCOUNTS & SYNC */}
-          {activeSection === 'accounts' && (
-            <div className="space-y-4 animate-fadeIn text-xs sm:text-sm">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-white text-base">AniList</div>
-                  <div className="text-xs text-zinc-400">Logged in as {settings.anilistUsername || 'Lilidev'}</div>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
-                  Connected
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-white text-base">MyAnimeList</div>
-                  <div className="text-xs text-zinc-400">Sync with your MAL profile</div>
-                </div>
-                <button
-                  onClick={() => alert('Connect MyAnimeList account')}
-                  className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs text-purple-300 font-semibold cursor-pointer"
-                >
-                  Sign in
-                </button>
-              </div>
-
-              <label className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-semibold text-white">Discord Rich Presence</div>
-                  <div className="text-xs text-zinc-400">Display what anime you are watching on Discord</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.discordPresence}
-                  onChange={(e) => updateSettings({ discordPresence: e.target.checked })}
-                  className="w-4 h-4 accent-purple-500 rounded"
-                />
-              </label>
-            </div>
-          )}
-
-          {/* SECTION: CONTENT & SERVERS */}
-          {activeSection === 'servers' && (
-            <div className="space-y-3 animate-fadeIn text-xs sm:text-sm">
-              <div className="flex items-center justify-between text-zinc-400 text-xs font-bold uppercase tracking-wider">
-                <span>42 Available Anilili Mirrors</span>
-                <span className="text-purple-400">DoH Active</span>
-              </div>
+              {/* CANVAS BACKGROUND */}
               <div className="space-y-2">
-                {[
-                  { name: 'Anikoto (Primary ★)', speed: '12ms', status: 'Online' },
-                  { name: 'AnimePahe CDN', speed: '24ms', status: 'Online' },
-                  { name: 'Lili Dedicated Cloud', speed: '18ms', status: 'Online' },
-                  { name: 'Bee Stream', speed: '32ms', status: 'Online' },
-                  { name: 'Sun 1080p Engine', speed: '45ms', status: 'Online' },
-                ].map((s) => (
-                  <div
-                    key={s.name}
-                    className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between"
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  BACKGROUND CANVAS
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => updateSettings({ canvasBackground: 'amoled' })}
+                    className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                      settings.canvasBackground === 'amoled'
+                        ? 'bg-purple-600/30 border-purple-400 text-white'
+                        : 'bg-black/60 border-white/10 text-zinc-400 hover:text-white'
+                    }`}
                   >
-                    <div>
-                      <div className="font-bold text-white">{s.name}</div>
-                      <div className="text-xs text-zinc-400">Latency: {s.speed}</div>
-                    </div>
-                    <span className="text-xs text-emerald-400 font-bold">{s.status}</span>
+                    <div className="font-bold text-xs">AMOLED Black</div>
+                    <div className="text-[10px] text-zinc-400 mt-0.5">Pure #000000; pixels power off on OLED</div>
+                  </button>
+
+                  <button
+                    onClick={() => updateSettings({ canvasBackground: 'dark' })}
+                    className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                      settings.canvasBackground === 'dark'
+                        ? 'bg-purple-600/30 border-purple-400 text-white'
+                        : 'bg-[#121214] border-white/10 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold text-xs">Dark Gray</div>
+                    <div className="text-[10px] text-zinc-400 mt-0.5">Material soft dark gray in lit rooms</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* APP BACKDROP ARTWORK */}
+              <div className="space-y-3">
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  APP BACKDROP
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['none', 'anime', 'custom'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => updateSettings({ backdropSource: mode })}
+                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
+                        settings.backdropSource === mode
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-zinc-400'
+                      }`}
+                    >
+                      {mode === 'none' ? 'None' : mode === 'anime' ? 'From Anime' : 'Custom URL'}
+                    </button>
+                  ))}
+                </div>
+
+                {settings.backdropSource === 'anime' && (
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    {popularAnimeBackdrops.map((bd) => (
+                      <button
+                        key={bd.title}
+                        onClick={() => updateSettings({ backdropImage: bd.url })}
+                        className={`relative aspect-video rounded-xl overflow-hidden border transition-all cursor-pointer ${
+                          settings.backdropImage === bd.url ? 'border-purple-400 ring-2 ring-purple-500' : 'border-white/10'
+                        }`}
+                        title={bd.title}
+                      >
+                        <img src={bd.url} alt={bd.title} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/80 text-[8px] font-bold text-white truncate max-w-[90%]">
+                          {bd.title}
+                        </span>
+                      </button>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {settings.backdropSource === 'custom' && (
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={customBackdropUrl}
+                      onChange={(e) => setCustomBackdropUrl(e.target.value)}
+                      placeholder="https://.../backdrop.jpg"
+                      className="flex-1 px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-purple-500"
+                    />
+                    <button
+                      onClick={() => {
+                        if (customBackdropUrl.trim()) {
+                          updateSettings({ backdropImage: customBackdropUrl.trim() });
+                          showNotice('Backdrop updated');
+                        }
+                      }}
+                      className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
+
+                {settings.backdropSource !== 'none' && (
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Backdrop Dim</span>
+                      <div className="flex gap-1 mt-1">
+                        {(['Light', 'Medium', 'Dark'] as const).map((dim) => (
+                          <button
+                            key={dim}
+                            onClick={() => updateSettings({ backdropDim: dim })}
+                            className={`flex-1 py-1 rounded-lg text-xs font-bold ${
+                              settings.backdropDim === dim ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                            }`}
+                          >
+                            {dim}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Backdrop Blur</span>
+                      <div className="mt-1">
+                        <button
+                          onClick={() => updateSettings({ backdropBlur: !settings.backdropBlur })}
+                          className={`w-full py-1 rounded-lg text-xs font-bold ${
+                            settings.backdropBlur ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                          }`}
+                        >
+                          {settings.backdropBlur ? 'Enabled (Smooth)' : 'Disabled (Sharp)'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* STARTUP & INTRO ANIMATION */}
+              <div className="space-y-3 pt-3 border-t border-white/10">
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  STARTUP & INTRO
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div className="pr-4">
+                      <div className="text-sm font-semibold text-white flex items-center gap-2">
+                        <span>Play Startup Video Intro</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          Glitch Intro
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1">
+                        Plays the official animated AniLife glitch video with audio when launching the app
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={settings.playAppIntro}
+                      onChange={(e) => updateSettings({ playAppIntro: e.target.checked })}
+                      className="w-5 h-5 accent-purple-500 rounded cursor-pointer shrink-0"
+                    />
+                  </label>
+
+                  <div className="pt-2 flex items-center justify-between border-t border-white/5">
+                    <span className="text-xs text-zinc-400">
+                      Preview animation and sound effects
+                    </span>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        playIntroAnimation();
+                      }}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors cursor-pointer shadow-md shadow-purple-600/30"
+                      title="Preview AniLife Intro Animation"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-white" />
+                      <span>Preview Intro</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* SECTION: DATA */}
-          {activeSection === 'data' && (
-            <div className="space-y-3 animate-fadeIn text-xs sm:text-sm">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                <div className="font-bold text-white">Backup & Restore</div>
-                <p className="text-xs text-zinc-400">Export your local watchlist, watch progress, and settings to a JSON file.</p>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={handleExportData}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500 font-semibold text-xs text-white cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Export JSON</span>
-                  </button>
-                  <button
-                    onClick={() => alert('Select a valid Anilili JSON backup to restore.')}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 font-semibold text-xs text-white cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Import JSON</span>
-                  </button>
+          {/* ======================================================== */}
+          {/* 2. PLAYER SETTINGS                                       */}
+          {/* ======================================================== */}
+          {activeSection === 'player' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="space-y-3">
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  PLAYBACK PREFERENCES
                 </div>
+
+                <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Auto-play next episode</div>
+                    <div className="text-xs text-zinc-400 mt-0.5">Automatically advances to next episode when current finishes</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.autoPlayNext}
+                    onChange={(e) => updateSettings({ autoPlayNext: e.target.checked })}
+                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Auto-skip intro, recap and outro</div>
+                    <div className="text-xs text-zinc-400 mt-0.5">Community skip timestamps provided by AniSkip and media-index</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.autoSkipIntro}
+                    onChange={(e) => updateSettings({ autoSkipIntro: e.target.checked })}
+                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Auto-skip filler episodes</div>
+                    <div className="text-xs text-zinc-400 mt-0.5">Bypasses anime non-canon filler arcs automatically</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.skipFiller}
+                    onChange={(e) => updateSettings({ skipFiller: e.target.checked })}
+                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                  />
+                </label>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+              {/* Default Quality & Speed */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Default Quality</span>
+                  <select
+                    value={settings.defaultQuality}
+                    onChange={(e) => updateSettings({ defaultQuality: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="Auto">Auto (Adaptive)</option>
+                    <option value="1080p">1080p Full HD</option>
+                    <option value="720p">720p HD</option>
+                    <option value="480p">480p SD</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Screen Fit</span>
+                  <select
+                    value={settings.screenFit}
+                    onChange={(e) => updateSettings({ screenFit: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="Fit">Fit (Aspect Ratio)</option>
+                    <option value="Crop">Crop (Zoom to Fill)</option>
+                    <option value="Fill">Fill (Stretch)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* 3. SUBTITLES & AUDIO                                     */}
+          {/* ======================================================== */}
+          {activeSection === 'subtitles' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="space-y-3">
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  AUDIO & SUBTITLE DEFAULTS
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                  <div className="text-sm font-semibold text-white">Default Audio Mode</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => updateSettings({ defaultAudioMode: 'SUB' })}
+                      className={`py-2 rounded-xl text-xs font-bold ${
+                        settings.defaultAudioMode === 'SUB' ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                      }`}
+                    >
+                      Japanese (Sub)
+                    </button>
+                    <button
+                      onClick={() => updateSettings({ defaultAudioMode: 'DUB' })}
+                      className={`py-2 rounded-xl text-xs font-bold ${
+                        settings.defaultAudioMode === 'DUB' ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                      }`}
+                    >
+                      English / Localized (Dub)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                  <div className="text-sm font-semibold text-white">Preferred Subtitle Language</div>
+                  <select
+                    value={settings.preferredSubLanguage}
+                    onChange={(e) => updateSettings({ preferredSubLanguage: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none"
+                  >
+                    <option value="English">English</option>
+                    <option value="Spanish">Spanish (Español)</option>
+                    <option value="French">French (Français)</option>
+                    <option value="German">German (Deutsch)</option>
+                    <option value="Portuguese">Portuguese (Português)</option>
+                    <option value="Italian">Italian (Italiano)</option>
+                  </select>
+                </div>
+
+                <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Subtitles on Dub</div>
+                    <div className="text-xs text-zinc-400 mt-0.5">Keep closed captions on when watching dubbed audio</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.subtitlesOnDub}
+                    onChange={(e) => updateSettings({ subtitlesOnDub: e.target.checked })}
+                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* 4. SERVERS & SOURCES (Anilili ProviderCatalog)          */}
+          {/* ======================================================== */}
+          {activeSection === 'servers' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Enabled Servers Card matching user screenshots */}
+              <div
+                onClick={() => setShowEnabledServersModal(true)}
+                className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 to-[#181528] border border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer shadow-lg"
+              >
                 <div>
-                  <div className="font-bold text-white">Clear Video Cache</div>
-                  <div className="text-xs text-zinc-400">Free temporary buffered frames and preview snapshots</div>
+                  <div className="text-[11px] font-bold text-purple-400 uppercase tracking-wider">
+                    SERVERS
+                  </div>
+                  <div className="text-base font-bold text-white mt-0.5">Enabled servers</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">
+                    {(settings.enabledServers && settings.enabledServers.length > 0 ? settings.enabledServers : SERVERS.map(s => s.id)).length} of {SERVERS.length} on
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-purple-300 hidden sm:inline">Configure</span>
+                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Provider Priority Order</h3>
+                  <p className="text-xs text-zinc-400">Order determines stream lookup and automatic failover</p>
                 </div>
                 <button
-                  onClick={() => alert('Video cache cleared successfully!')}
-                  className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-red-500/20 text-xs text-red-400 font-semibold cursor-pointer"
+                  onClick={() => {
+                    updateSettings({
+                      serverPriority: SERVERS.map(s => s.id),
+                      enabledServers: SERVERS.map(s => s.id)
+                    });
+                    showNotice('Reset server order to defaults');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-zinc-300 font-semibold cursor-pointer"
                 >
-                  Clear
+                  Reset Order
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {(settings.serverPriority || SERVERS.map(s => s.id)).map((serverId, idx) => {
+                  const server = SERVERS.find(s => s.id === serverId);
+                  if (!server) return null;
+                  const isEnabled = (settings.enabledServers || []).includes(serverId);
+                  const isDefault = settings.activeServer === serverId;
+
+                  return (
+                    <div
+                      key={serverId}
+                      className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                        isDefault
+                          ? 'bg-purple-950/40 border-purple-500/60'
+                          : isEnabled
+                          ? 'bg-white/5 border-white/5'
+                          : 'bg-black/40 border-white/5 opacity-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <span className="w-5 text-center text-xs font-mono text-zinc-500">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-white truncate">{server.name}</span>
+                            {server.badge && (
+                              <span className="px-2 py-0.2 rounded-full bg-purple-900/50 text-[9px] font-bold text-purple-300">
+                                {server.badge}
+                              </span>
+                            )}
+                            {isDefault && (
+                              <span className="text-[10px] text-purple-400 font-bold">Active Server</span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-zinc-400 line-clamp-1">{server.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        {/* Make Default */}
+                        {!isDefault && isEnabled && (
+                          <button
+                            onClick={() => updateSettings({ activeServer: serverId })}
+                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-semibold text-zinc-300 cursor-pointer"
+                          >
+                            Set Default
+                          </button>
+                        )}
+
+                        {/* Move Up/Down */}
+                        <button
+                          onClick={() => moveServer(idx, 'up')}
+                          disabled={idx === 0}
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 cursor-pointer"
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => moveServer(idx, 'down')}
+                          disabled={idx === (settings.serverPriority || []).length - 1}
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 cursor-pointer"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Enable/Disable */}
+                        <button
+                          onClick={() => toggleServerEnabled(serverId)}
+                          className={`p-1.5 rounded-lg cursor-pointer ${
+                            isEnabled ? 'bg-purple-600/30 text-purple-300' : 'bg-zinc-800 text-zinc-500'
+                          }`}
+                          title={isEnabled ? 'Disable provider' : 'Enable provider'}
+                        >
+                          {isEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* 5. ACCOUNTS & SYNC                                       */}
+          {/* ======================================================== */}
+          {activeSection === 'accounts' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-950/40 to-black border border-purple-500/30 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={currentUser?.avatar?.large || 'https://anilist.co/img/icons/icon.svg'}
+                      alt="AniList"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-purple-400"
+                    />
+                    <div>
+                      <h3 className="font-bold text-sm text-white">
+                        {currentUser?.name ? `@${currentUser.name}` : 'AniList Account'}
+                      </h3>
+                      <p className="text-xs text-purple-300">
+                        {oauthToken ? 'Connected via OAuth 2.0 (Client 55798)' : 'Not signed in'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {oauthToken ? (
+                    <button
+                      onClick={logoutFromAniList}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/40 text-red-300 border border-red-500/30 text-xs font-semibold hover:bg-red-900/50 cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Disconnect</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowAuthModal(true)}
+                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 cursor-pointer"
+                    >
+                      Sign In to AniList
+                    </button>
+                  )}
+                </div>
+
+                {oauthToken && (
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+                    <span className="text-zinc-400">Syncs watched episodes directly to your list</span>
+                    <button
+                      onClick={syncAniList}
+                      disabled={isSyncingAniList}
+                      className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 font-bold cursor-pointer"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncingAniList ? 'animate-spin' : ''}`} />
+                      <span>{isSyncingAniList ? 'Syncing...' : 'Sync Now'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* 6. CONTENT FILTERING                                     */}
+          {/* ======================================================== */}
+          {activeSection === 'content' && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                CATALOGUE FILTERING
+              </div>
+
+              <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                <div>
+                  <div className="text-sm font-semibold text-white">Hide Adult (18+) Content</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">Filter out explicit anime entries and adult servers</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.hideAdultContent}
+                  onChange={(e) => updateSettings({ hideAdultContent: e.target.checked })}
+                  className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                />
+              </label>
+
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                <div className="text-sm font-semibold text-white">Preferred Title Display</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['english', 'romaji', 'native'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => updateSettings({ titleLanguage: lang })}
+                      className={`py-2 rounded-xl text-xs font-bold capitalize ${
+                        settings.titleLanguage === lang ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
+                <div>
+                  <div className="text-sm font-semibold text-white">Blur Spoilers in Overviews</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">Blurs episode summaries until hovered or tapped</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.blurSpoilers}
+                  onChange={(e) => updateSettings({ blurSpoilers: e.target.checked })}
+                  className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                />
+              </label>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* 7. DATA & STORAGE                                        */}
+          {/* ======================================================== */}
+          {activeSection === 'data' && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                BACKUP & RECOVERY
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleExportData}
+                  className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-purple-400" />
+                  <span>Export Backup JSON</span>
+                </button>
+
+                <label className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer">
+                  <Upload className="w-4 h-4 text-purple-400" />
+                  <span>Import Backup JSON</span>
+                  <input type="file" accept=".json" onChange={handleImportData} className="hidden" />
+                </label>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-white">Reset Local Cache</div>
+                  <div className="text-xs text-zinc-400">Clears cached anime catalogue and skip timings</div>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('anilife_live_catalog_cache_v3');
+                    localStorage.removeItem('anilife_live_catalog_cache_v2');
+                    showNotice('Cache cleared. Reloading catalogue...');
+                    setTimeout(() => window.location.reload(), 1000);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-zinc-300 cursor-pointer"
+                >
+                  Clear Cache
                 </button>
               </div>
             </div>
           )}
 
-          {/* SECTION: ABOUT */}
+          {/* ======================================================== */}
+          {/* 8. ABOUT                                                 */}
+          {/* ======================================================== */}
           {activeSection === 'about' && (
-            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 animate-fadeIn text-center">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 to-indigo-500 mx-auto flex items-center justify-center shadow-xl shadow-purple-600/30 text-white font-black text-2xl">
-                A
+            <div className="space-y-4 animate-fadeIn text-xs">
+              <div className="p-5 rounded-3xl bg-[#14121e] border border-white/10 space-y-3">
+                <div className="flex items-center gap-3.5">
+                  <img
+                    src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+                    alt="AniLife Logo"
+                    className="w-12 h-12 rounded-2xl shadow-xl shadow-purple-950/70 ring-1 ring-white/15 object-cover"
+                  />
+                  <div>
+                    <h3 className="text-base font-black text-white tracking-wide">AniLife Web</h3>
+                    <p className="text-xs text-purple-300">Version 2.4.0 • Official Client</p>
+                  </div>
+                </div>
+                <p className="text-zinc-300 leading-relaxed text-xs">
+                  Anilife is a clean, modern anime client built with real AniList GraphQL integration, community skip timings, and sanilili media index streaming pipelines.
+                </p>
               </div>
-              <div>
-                <h3 className="text-2xl font-black text-white">Anilili Web</h3>
-                <p className="text-xs text-purple-400 font-semibold mt-1">v0.1.84 build 96 (Official Web Client)</p>
-              </div>
-              <p className="text-sm text-zinc-300 max-w-md mx-auto">
-                Made with love by lili & team. Built for the anime community with ultra-low latency playback, AniList sync, and custom UI themes.
-              </p>
-              <div className="pt-2 flex justify-center">
-                <button
-                  onClick={() => alert('Opening Anilili Community Discord...')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs cursor-pointer shadow-lg shadow-purple-600/30"
+
+              <div className="space-y-2">
+                <a
+                  href="https://github.com/sanilili/media-index"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 hover:text-white"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Join Discord Community</span>
-                </button>
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-purple-400" />
+                    <span className="font-semibold">sanilili/media-index</span>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-zinc-500" />
+                </a>
+
+                <a
+                  href="https://github.com/sanilili/Anilili"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 hover:text-white"
+                >
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-purple-400" />
+                    <span className="font-semibold">sanilili/Anilili (Architecture & Providers)</span>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-zinc-500" />
+                </a>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Enabled Servers Full Bottom Sheet / Modal */}
+      {showEnabledServersModal && (
+        <EnabledServersModal onClose={() => setShowEnabledServersModal(false)} />
+      )}
     </div>
   );
 };

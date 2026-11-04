@@ -1,5 +1,6 @@
 {
   "name": "Anilili Web",
-  "description": "Web version of Anilili",
-  "requestFramePermissions": []
+  "description": "Web version of Anilili anime streaming and tracking with AniList sync, episode schedule, customizable player, and sleek anime-themed UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

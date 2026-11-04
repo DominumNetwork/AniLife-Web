@@ -12,6 +12,8 @@ import { SettingsModal } from './components/SettingsModal';
 import { RandomPickModal } from './components/RandomPickModal';
 import { NotificationsModal } from './components/NotificationsModal';
 import { ProfileSelectModal } from './components/ProfileSelectModal';
+import { AniListAuthModal } from './components/AniListAuthModal';
+import { AppIntro } from './components/AppIntro';
 
 const AppContent: React.FC = () => {
   const {
@@ -28,33 +30,49 @@ const AppContent: React.FC = () => {
     setShowNotificationsModal,
     showProfileModal,
     setShowProfileModal,
+    showAuthModal,
+    setShowAuthModal,
+    showIntro,
+    setShowIntro,
     settings,
   } = useApp();
 
   return (
     <div className="relative min-h-screen text-zinc-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white">
-      {/* Background Anime Backdrop with dimming and blur matching screenshots */}
+      {/* Canvas background (AMOLED pure black vs Dark) */}
       <div
-        className="fixed inset-0 z-0 bg-cover bg-center pointer-events-none transition-all duration-700"
+        className="fixed inset-0 z-0 pointer-events-none transition-colors duration-500"
         style={{
-          backgroundImage: `url(${settings.backdropImage || '/assets/aistudio/Screenshot_20261102_214725_Anilili_b7aba3a9.jpg'})`,
-          filter: settings.backdropBlur ? 'blur(14px)' : 'none',
-          transform: settings.backdropBlur ? 'scale(1.05)' : 'scale(1)',
+          backgroundColor: settings.canvasBackground === 'amoled' ? '#000000' : '#121214'
         }}
       />
-      {/* Dark violet gradient overlay */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300"
-        style={{
-          backgroundColor:
-            settings.backdropDim === 'Dark'
-              ? 'rgba(9, 7, 18, 0.92)'
-              : settings.backdropDim === 'Light'
-              ? 'rgba(11, 9, 20, 0.72)'
-              : 'rgba(10, 8, 19, 0.84)',
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-radial from-purple-900/15 via-transparent to-black/70 pointer-events-none" />
+
+      {/* Optional Background Anime Backdrop with dimming and blur */}
+      {settings.backdropSource !== 'none' && settings.backdropImage && (
+        <>
+          <div
+            className="fixed inset-0 z-0 bg-cover bg-center pointer-events-none transition-all duration-700"
+            style={{
+              backgroundImage: `url(${settings.backdropImage})`,
+              filter: settings.backdropBlur ? 'blur(16px)' : 'none',
+              transform: settings.backdropBlur ? 'scale(1.05)' : 'scale(1)',
+            }}
+          />
+          {/* Dimming overlay */}
+          <div
+            className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300"
+            style={{
+              backgroundColor:
+                settings.backdropDim === 'Dark'
+                  ? 'rgba(0, 0, 0, 0.88)'
+                  : settings.backdropDim === 'Light'
+                  ? 'rgba(0, 0, 0, 0.50)'
+                  : 'rgba(0, 0, 0, 0.70)',
+            }}
+          />
+        </>
+      )}
+      <div className="fixed inset-0 z-0 bg-radial from-purple-900/10 via-transparent to-black/80 pointer-events-none" />
 
       {/* Main App Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -107,6 +125,16 @@ const AppContent: React.FC = () => {
       {/* Profile Select Modal */}
       {showProfileModal && (
         <ProfileSelectModal onClose={() => setShowProfileModal(false)} />
+      )}
+
+      {/* AniList Sign In & Auth Modal */}
+      {showAuthModal && (
+        <AniListAuthModal onClose={() => setShowAuthModal(false)} />
+      )}
+
+      {/* Animated AniLife Startup Intro */}
+      {showIntro && (
+        <AppIntro onClose={() => setShowIntro(false)} />
       )}
     </div>
   );

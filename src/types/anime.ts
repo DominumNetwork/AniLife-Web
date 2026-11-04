@@ -30,8 +30,10 @@ export interface RelatedAnime {
 
 export interface Anime {
   id: string;
+  anilistId?: number;
   title: string;
   romajiTitle?: string;
+  nativeTitle?: string;
   bannerImage: string;
   posterImage: string;
   score: number; // percentage like 85
@@ -84,6 +86,8 @@ export interface ServerOption {
   supportsDub: boolean;
   supportsSub: boolean;
   supportsDownload: boolean;
+  badge?: string; // e.g. 'Cloudflare', 'Español', 'Hindi', 'Archive'
+  description?: string;
 }
 
 export interface UserProfile {
@@ -93,11 +97,37 @@ export interface UserProfile {
   accentColor: string;
   pin?: string;
   isKidsMode?: boolean;
+  createdAt?: number;
 }
 
+export type ThemePresetName =
+  | 'Midnight'
+  | 'Crimson Night'
+  | 'Toxic'
+  | 'Royal'
+  | 'Deep Sea'
+  | 'Cyber'
+  | 'Sakura'
+  | 'Ember'
+  | 'Gilded'
+  | 'Forest'
+  | 'High contrast';
+
 export interface AppSettings {
+  // Theme & Appearance
+  themePreset: ThemePresetName;
+  canvasBackground: 'amoled' | 'dark';
+  accentColor: string;
+  backdropSource: 'none' | 'anime' | 'custom';
+  backdropImage: string;
+  backdropDim: 'Light' | 'Medium' | 'Dark';
+  backdropBlur: boolean;
+  glassPopups: boolean;
+  refreshSpinner: boolean;
+  playAppIntro: boolean;
+
   // Player
-  showDetailsWhenPaused: boolean;
+  autoPlayNext: boolean;
   autoSkipIntro: boolean;
   skipFiller: boolean;
   showSkipButton: boolean;
@@ -105,6 +135,8 @@ export interface AppSettings {
   watchedThreshold: number; // default 80%
   defaultQuality: 'Auto' | '1080p' | '720p' | '480p';
   playbackSpeed: number; // default 1.0
+  screenFit: 'Fit' | 'Crop' | 'Fill';
+  defaultAudioMode: 'SUB' | 'DUB';
 
   // Subtitles
   showSubtitlesByDefault: boolean;
@@ -112,23 +144,22 @@ export interface AppSettings {
   preferredSubLanguage: string;
   secondChoiceSubtitles: string;
   captionSize: 'Small' | 'Medium' | 'Large';
+  subtitleOffsetSec: number;
 
-  // Appearance
-  accentColor: string; // hex or name
-  backdropImage: string;
-  backdropDim: 'Light' | 'Medium' | 'Dark';
-  backdropBlur: boolean;
-  glassPopups: boolean;
-  refreshSpinner: boolean;
+  // Servers & Sources
+  activeServer: string;
+  serverPriority: string[];
+  enabledServers: string[];
+
+  // Content
+  hideAdultContent: boolean;
+  titleLanguage: 'romaji' | 'english' | 'native';
+  blurSpoilers: boolean;
+  onlyWatchableEpisodes: boolean;
 
   // Accounts & Sync
   anilistConnected: boolean;
   anilistUsername?: string;
   discordPresence: boolean;
-
-  // Content & Servers
-  hideAdultContent: boolean;
-  onlyWatchableEpisodes: boolean;
   dnsOverHttps: boolean;
-  activeServer: string;
 }

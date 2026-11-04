@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { useApp } from '../context/AppContext';
-import { ANIME_CATALOG } from '../utils/animeData';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useApp, convertAniListToAnime } from '../context/AppContext';
+import { Anime } from '../types/anime';
+import { searchAniList } from '../utils/anilistApi';
 import {
   Search,
-  RotateCcw,
   SlidersHorizontal,
   History,
   X,
   Star,
-  Film
+  Film,
+  Loader2
 } from 'lucide-react';
 
 export const BrowseSearch: React.FC = () => {
@@ -17,11 +18,14 @@ export const BrowseSearch: React.FC = () => {
     recentSearches,
     addRecentSearch,
     removeRecentSearch,
-    clearRecentSearches
+    clearRecentSearches,
+    liveCatalog
   } = useApp();
 
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [liveSearchResults, setLiveSearchResults] = useState<Anime[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const categories = [
     'All',
@@ -32,8 +36,40 @@ export const BrowseSearch: React.FC = () => {
     'Comedy',
     'Drama',
     'Fantasy',
-    'Romance'
+    'Romance',
+    'Sci-Fi',
+    'Supernatural'
   ];
+
+  // Debounced live AniList search query
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setLiveSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await searchAniList(
+          trimmed,
+          selectedCategory !== 'All' && selectedCategory !== 'Season' && selectedCategory !== 'Movies'
+            ? selectedCategory
+            : undefined
+        );
+        const mapped = results.map(convertAniListToAnime);
+        setLiveSearchResults(mapped);
+      } catch (err) {
+        console.error('AniList search failed:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [query, selectedCategory]);
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -50,10 +86,17 @@ export const BrowseSearch: React.FC = () => {
   const handleReset = () => {
     setQuery('');
     setSelectedCategory('All');
+    setLiveSearchResults([]);
   };
 
+  // Combine live AniList results with local live catalog
   const filteredAnime = useMemo(() => {
-    return ANIME_CATALOG.filter((anime) => {
+    if (query.trim().length >= 2 && liveSearchResults.length > 0) {
+      // Prioritize live results from AniList API
+      return liveSearchResults;
+    }
+
+    return liveCatalog.filter((anime) => {
       const matchQuery =
         !query.trim() ||
         anime.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -71,14 +114,14 @@ export const BrowseSearch: React.FC = () => {
 
       return matchQuery && matchCategory;
     });
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, liveSearchResults, liveCatalog]);
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
       {/* Header */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Browse</h1>
-        <p className="text-sm text-zinc-400 mt-1">Find your next obsession</p>
+        <p className="text-sm text-zinc-400 mt-1">Search millions of anime powered by AniList</p>
       </div>
 
       {/* Search Input Bar + Reset & Filter Buttons */}
@@ -88,11 +131,13 @@ export const BrowseSearch: React.FC = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search anime"
+            placeholder="Search anime by title, character, or genre..."
             className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-black/60 border border-purple-500/30 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 shadow-inner transition-all"
           />
           <Search className="w-5 h-5 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          {query && (
+          {isSearching ? (
+            <Loader2 className="w-4 h-4 text-purple-400 animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
+          ) : query ? (
             <button
               type="button"
               onClick={() => setQuery('')}
@@ -100,7 +145,7 @@ export const BrowseSearch: React.FC = () => {
             >
               <X className="w-4 h-4" />
             </button>
-          )}
+          ) : null}
         </form>
 
         <button
@@ -183,11 +228,18 @@ export const BrowseSearch: React.FC = () => {
 
       {/* Results Anime Grid */}
       <div className="pt-2">
-        <div className="text-xs text-zinc-400 mb-3">
-          Showing {filteredAnime.length} results
+        <div className="flex items-center justify-between text-xs text-zinc-400 mb-3">
+          <span>
+            {isSearching ? 'Searching AniList...' : `Showing ${filteredAnime.length} results`}
+          </span>
+          {query.trim().length >= 2 && (
+            <span className="text-purple-400 text-[11px] font-semibold">
+              Live AniList Data
+            </span>
+          )}
         </div>
 
-        {filteredAnime.length === 0 ? (
+        {filteredAnime.length === 0 && !isSearching ? (
           <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 space-y-3">
             <Film className="w-10 h-10 text-zinc-500 mx-auto" />
             <h3 className="text-lg font-bold text-white">No anime found</h3>
@@ -201,10 +253,14 @@ export const BrowseSearch: React.FC = () => {
                 onClick={() => setSelectedAnime(anime)}
                 className="group cursor-pointer space-y-2"
               >
-                <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30">
+                <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
                   <img
                     src={anime.posterImage}
                     alt={anime.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx158870-g875H3jE8wR8.jpg';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">

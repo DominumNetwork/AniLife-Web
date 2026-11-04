@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { ANIME_CATALOG } from '../utils/animeData';
 import { Anime, ContinueWatchingEntry } from '../types/anime';
 import { ContinueContextMenu } from './ContinueContextMenu';
 import {
@@ -8,10 +7,14 @@ import {
   Info,
   X,
   Star,
-  ChevronRight,
   SlidersHorizontal,
   LayoutGrid,
-  Rows
+  Rows,
+  Sparkles,
+  ExternalLink,
+  Flame,
+  Tv,
+  Trophy
 } from 'lucide-react';
 
 export const HomeFeed: React.FC = () => {
@@ -19,141 +22,151 @@ export const HomeFeed: React.FC = () => {
     setSelectedAnime,
     continueWatching,
     playAnimeEpisode,
-    removeFromContinueWatching
+    removeFromContinueWatching,
+    liveCatalog,
+    trendingAnime,
+    popularSeasonAnime,
+    topRatedAnime,
+    spotlightAnime,
+    currentUser,
+    setShowAuthModal
   } = useApp();
 
   const [activeSpotlightIdx, setActiveSpotlightIdx] = useState(0);
   const [isContinueExpanded, setIsContinueExpanded] = useState(false);
   const [contextItem, setContextItem] = useState<{ anime: Anime; episodeNumber: number } | null>(null);
 
-  const spotlightAnimeList = [
-    ANIME_CATALOG.find(a => a.id === 'apothecary-diaries-s3') || ANIME_CATALOG[1],
-    ANIME_CATALOG.find(a => a.id === 'eminence-in-shadow') || ANIME_CATALOG[2],
-    ANIME_CATALOG.find(a => a.id === 'gushing-over-magical-girls') || ANIME_CATALOG[0],
-    ANIME_CATALOG.find(a => a.id === 'frieren-journey-end') || ANIME_CATALOG[3],
-  ];
+  // Dynamic spotlight list directly from AniList
+  const spotlightAnimeList =
+    spotlightAnime.length > 0
+      ? spotlightAnime
+      : liveCatalog.slice(0, 5);
 
-  const currentSpotlight = spotlightAnimeList[activeSpotlightIdx] || spotlightAnimeList[0];
+  const currentSpotlight = spotlightAnimeList[activeSpotlightIdx] || liveCatalog[0];
 
   // Resolve Continue Watching items with full anime metadata
   const resolvedContinueItems = continueWatching
     .map(entry => {
-      const anime = ANIME_CATALOG.find(a => a.id === entry.animeId);
+      const anime = liveCatalog.find(a => a.id === entry.animeId);
       return anime ? { entry, anime } : null;
     })
     .filter(Boolean) as { entry: ContinueWatchingEntry; anime: Anime }[];
 
-  const trendingAnime = ANIME_CATALOG.slice(0, 6);
-  const popularSeason = [
-    ANIME_CATALOG[0],
-    ANIME_CATALOG[1],
-    ANIME_CATALOG[4],
-    ANIME_CATALOG[7],
-    ANIME_CATALOG[9],
-  ];
-  const topRated = [...ANIME_CATALOG].sort((a, b) => b.score - a.score);
+  // Dynamic rows from real AniList data
+  const forYouList = topRatedAnime.length > 0 ? topRatedAnime.slice(0, 10) : liveCatalog.slice(4, 12);
+  const trendingList = trendingAnime.length > 0 ? trendingAnime : liveCatalog.slice(0, 12);
+  const seasonList = popularSeasonAnime.length > 0 ? popularSeasonAnime : liveCatalog.slice(8, 20);
 
   return (
     <div className="space-y-8 pb-20 animate-fadeIn">
       {/* Spotlight Featured Banner */}
-      <section className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden min-h-[360px] sm:min-h-[460px] flex items-end p-5 sm:p-10 border border-purple-500/20 shadow-2xl group">
-        {/* Backdrop Image with gradient overlay */}
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-700 transform scale-100 group-hover:scale-102"
-          style={{
-            backgroundImage: `url(${currentSpotlight.bannerImage || currentSpotlight.posterImage})`,
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0e0c17] via-[#0e0c17]/65 to-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0e0c17] via-[#0e0c17]/40 to-transparent" />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-3.5 bg-purple-500 rounded-full inline-block" />
-            <span className="text-xs uppercase tracking-widest font-bold text-purple-300">
-              Anilili Featured
-            </span>
+      {currentSpotlight && (
+        <section className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-end p-5 sm:p-10 border border-purple-500/20 shadow-2xl group">
+          {/* Backdrop Image with gradient overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-700 transform scale-100 group-hover:scale-102"
+            style={{
+              backgroundImage: `url(${currentSpotlight.bannerImage || currentSpotlight.posterImage})`,
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0e0c17] via-[#0e0c17]/65 to-black/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0e0c17] via-[#0e0c17]/40 to-transparent" />
           </div>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-            {currentSpotlight.title}
-          </h1>
-
-          {/* Metadata badges */}
-          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-medium text-zinc-300">
-            <div className="flex items-center gap-1 text-purple-300 font-bold bg-purple-900/40 px-2 py-0.5 rounded-full border border-purple-500/30">
-              <Star className="w-3.5 h-3.5 fill-purple-400 text-purple-400" />
-              <span>{currentSpotlight.score}%</span>
+          {/* Content */}
+          <div className="relative z-10 max-w-2xl space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-3.5 bg-purple-500 rounded-full inline-block" />
+              <span className="text-xs uppercase tracking-widest font-bold text-purple-300 flex items-center gap-1.5">
+                <img
+                  src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+                  alt=""
+                  className="w-4 h-4 rounded-full shadow-sm"
+                />
+                <span>AniLife Spotlight • Live AniList</span>
+              </span>
             </div>
-            <span>•</span>
-            <span>{currentSpotlight.format}</span>
-            <span>•</span>
-            <span>{currentSpotlight.year}</span>
-            <span>•</span>
-            <span>{currentSpotlight.durationMins}m</span>
-            <span>•</span>
-            <span className="text-zinc-400">{currentSpotlight.genres.slice(0, 2).join(' • ')}</span>
-          </div>
 
-          <p className="text-xs sm:text-sm text-zinc-300 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-xl">
-            {currentSpotlight.synopsis}
-          </p>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+              {currentSpotlight.title}
+            </h1>
 
-          {/* Action Row */}
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => playAnimeEpisode(currentSpotlight, 1)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs sm:text-sm transition-all duration-200 shadow-lg shadow-purple-600/30 cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              <span>Open to watch</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedAnime(currentSpotlight)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all cursor-pointer"
-            >
-              <Info className="w-4 h-4" />
-              <span>Details</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Carousel indicators */}
-        <div className="absolute right-5 bottom-6 z-10 flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
-          {spotlightAnimeList.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveSpotlightIdx(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`transition-all rounded-full ${
-                activeSpotlightIdx === i
-                  ? 'w-6 h-1.5 bg-purple-500'
-                  : 'w-1.5 h-1.5 bg-zinc-500 hover:bg-zinc-300'
-              }`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Continue Watching Row */}
-      {resolvedContinueItems.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">
-                  Continue watching
-                </h2>
-                <span className="w-8 h-0.5 bg-purple-500/80 rounded-full" />
+            {/* Metadata badges */}
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-medium text-zinc-300">
+              <div className="flex items-center gap-1 text-purple-300 font-bold bg-purple-900/40 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                <Star className="w-3.5 h-3.5 fill-purple-400 text-purple-400" />
+                <span>{currentSpotlight.score}%</span>
               </div>
-              <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5">
-                Long-press a title to remove it or move it on your anime list
-              </p>
+              <span>•</span>
+              <span>{currentSpotlight.format}</span>
+              <span>•</span>
+              <span>{currentSpotlight.year}</span>
+              <span>•</span>
+              <span>{currentSpotlight.durationMins}m</span>
+              <span>•</span>
+              <span className="text-zinc-400">{currentSpotlight.genres.slice(0, 2).join(' • ')}</span>
             </div>
 
+            <p className="text-xs sm:text-sm text-zinc-300 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-xl">
+              {currentSpotlight.synopsis}
+            </p>
+
+            {/* Action Row */}
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => playAnimeEpisode(currentSpotlight, 1)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs sm:text-sm transition-all duration-200 shadow-lg shadow-purple-600/30 cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>Open to watch</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedAnime(currentSpotlight)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all cursor-pointer"
+              >
+                <Info className="w-4 h-4" />
+                <span>Details</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Carousel indicators */}
+          <div className="absolute right-5 bottom-6 z-10 flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
+            {spotlightAnimeList.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveSpotlightIdx(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`transition-all rounded-full cursor-pointer ${
+                  activeSpotlightIdx === i
+                    ? 'w-6 h-1.5 bg-purple-500 shadow-sm shadow-purple-500/80'
+                    : 'w-1.5 h-1.5 bg-zinc-500 hover:bg-zinc-300'
+                }`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Continue Watching Section */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">
+                Continue watching
+              </h2>
+              <span className="w-8 h-0.5 bg-purple-500/80 rounded-full" />
+            </div>
+            <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5">
+              {currentUser
+                ? `Synced with AniList user ${currentUser.name}`
+                : 'Click an item to resume, or sign in with AniList to load your profile list'}
+            </p>
+          </div>
+
+          {resolvedContinueItems.length > 0 && (
             <button
               onClick={() => setIsContinueExpanded(!isContinueExpanded)}
               className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 text-xs text-purple-300 font-medium transition-colors cursor-pointer"
@@ -170,12 +183,14 @@ export const HomeFeed: React.FC = () => {
                 </>
               )}
             </button>
-          </div>
+          )}
+        </div>
 
+        {resolvedContinueItems.length > 0 ? (
           <div
             className={
               isContinueExpanded
-                ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4'
+                ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4'
                 : 'flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 pt-1'
             }
           >
@@ -184,106 +199,132 @@ export const HomeFeed: React.FC = () => {
                 100,
                 Math.round((entry.currentTimeSec / (entry.durationSec || 1440)) * 100)
               );
-              const remainingMin = Math.max(
-                1,
-                Math.round(((entry.durationSec || 1440) - entry.currentTimeSec) / 60)
-              );
 
               return (
                 <div
                   key={anime.id}
                   className={`group relative shrink-0 ${
-                    isContinueExpanded ? 'w-full' : 'w-44 sm:w-56'
-                  } rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/40 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-900/20`}
+                    isContinueExpanded ? 'w-full' : 'w-72 sm:w-80'
+                  } h-36 rounded-2xl bg-black/60 border border-white/10 hover:border-purple-500/40 overflow-hidden transition-all duration-300 shadow-xl cursor-pointer`}
+                  onClick={() => playAnimeEpisode(anime, entry.episodeNumber, entry.audioMode)}
                 >
-                  {/* Poster Thumbnail */}
-                  <div
-                    onClick={() => playAnimeEpisode(anime, entry.episodeNumber, entry.audioMode)}
-                    className="relative aspect-video w-full overflow-hidden cursor-pointer"
-                  >
-                    <img
-                      src={anime.posterImage}
-                      alt={anime.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-lg group-hover:scale-110 group-hover:bg-purple-600 transition-all">
-                        <Play className="w-5 h-5 fill-white ml-0.5" />
-                      </div>
-                    </div>
+                  {/* Background Banner Image */}
+                  <img
+                    src={anime.bannerImage || anime.posterImage}
+                    alt={anime.title}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx158870-g875H3jE8wR8.jpg';
+                    }}
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/30" />
 
-                    {/* DUB badge */}
-                    {entry.audioMode === 'DUB' && (
-                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-sm text-[10px] font-bold text-amber-300 tracking-wider">
-                        DUB
-                      </span>
-                    )}
-
-                    {/* Progress Bar along bottom */}
-                    <div className="absolute bottom-0 inset-x-0 h-1 bg-white/20">
-                      <div
-                        className="h-full bg-purple-500 transition-all duration-300"
-                        style={{ width: `${progressPct}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Info bar */}
-                  <div className="p-2.5 flex items-start justify-between gap-1">
-                    <div
-                      onClick={() => setSelectedAnime(anime)}
-                      className="cursor-pointer flex-1 min-w-0"
-                    >
-                      <h4 className="font-semibold text-xs sm:text-sm text-white truncate group-hover:text-purple-300 transition-colors">
-                        {anime.title}
-                      </h4>
-                      <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                        EP {entry.episodeNumber} • {entry.serverName} • {remainingMin}m left
-                      </p>
-                    </div>
-
-                    {/* Context info button */}
+                  {/* Top Buttons: (i) on left, (x) on right */}
+                  <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setContextItem({ anime, episodeNumber: entry.episodeNumber });
                       }}
-                      className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-                      title="More options"
+                      className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-zinc-300 hover:text-white hover:bg-black/80 transition-colors"
+                      title="Details & Move on AniList"
                     >
                       <Info className="w-3.5 h-3.5" />
                     </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromContinueWatching(anime.id);
+                      }}
+                      className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-zinc-300 hover:text-white hover:bg-red-600/80 transition-colors"
+                      title="Remove from Continue watching"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Center Play Button on hover */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/50">
+                      <Play className="w-5 h-5 fill-white ml-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Bottom Info: Title, Subtitle, Progress Bar */}
+                  <div className="absolute bottom-0 inset-x-0 p-3 space-y-1 z-10">
+                    <h4 className="font-bold text-sm text-white truncate group-hover:text-purple-300 transition-colors">
+                      {anime.title}
+                    </h4>
+                    <p className="text-xs text-zinc-300 truncate">
+                      Episode {entry.episodeNumber} • {entry.audioMode || 'SUB'}
+                    </p>
+
+                    {/* Progress Bar along bottom */}
+                    <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mt-1">
+                      <div
+                        className="h-full bg-purple-500 rounded-full transition-all duration-300"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
-        </section>
-      )}
+        ) : (
+          /* Empty or Unlinked State Prompt */
+          <div className="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                <span>Connect your AniList Account</span>
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-lg">
+                Sign in to automatically load your actual Watching list, synced episodes, and ratings from AniList.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all cursor-pointer whitespace-nowrap"
+            >
+              Sign in with AniList
+            </button>
+          </div>
+        )}
+      </section>
 
-      {/* Row: Trending Now */}
+      {/* Row: Trending Now (Real Live AniList GraphQL) */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-amber-400" />
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">Trending Now</h2>
             <span className="w-8 h-0.5 bg-purple-500/80 rounded-full" />
           </div>
         </div>
 
         <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2">
-          {trendingAnime.map((anime) => (
+          {trendingList.map((anime, idx) => (
             <div
               key={anime.id}
               onClick={() => setSelectedAnime(anime)}
               className="group shrink-0 w-32 sm:w-44 cursor-pointer space-y-2"
             >
-              <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30">
+              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
                 <img
                   src={anime.posterImage}
                   alt={anime.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx158870-g875H3jE8wR8.jpg';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
+                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-[10px] font-black text-amber-300">
+                  #{idx + 1}
+                </div>
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
                   <Star className="w-2.5 h-2.5 fill-purple-400 text-purple-400" />
                   <span>{anime.score}%</span>
                 </div>
@@ -310,25 +351,30 @@ export const HomeFeed: React.FC = () => {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Tv className="w-4 h-4 text-purple-400" />
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">Popular This Season</h2>
             <span className="w-8 h-0.5 bg-purple-500/80 rounded-full" />
           </div>
         </div>
 
         <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2">
-          {popularSeason.map((anime) => (
+          {seasonList.map((anime) => (
             <div
               key={anime.id}
               onClick={() => setSelectedAnime(anime)}
               className="group shrink-0 w-32 sm:w-44 cursor-pointer space-y-2"
             >
-              <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30">
+              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
                 <img
                   src={anime.posterImage}
                   alt={anime.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx158870-g875H3jE8wR8.jpg';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
                   <Star className="w-2.5 h-2.5 fill-purple-400 text-purple-400" />
                   <span>{anime.score}%</span>
                 </div>
@@ -346,30 +392,35 @@ export const HomeFeed: React.FC = () => {
         </div>
       </section>
 
-      {/* Row: Top Rated */}
+      {/* Row: Top Rated of All Time */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">Top Rated</h2>
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">Top Rated All-Time</h2>
             <span className="w-8 h-0.5 bg-purple-500/80 rounded-full" />
           </div>
         </div>
 
         <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2">
-          {topRated.map((anime) => (
+          {forYouList.map((anime) => (
             <div
               key={anime.id}
               onClick={() => setSelectedAnime(anime)}
               className="group shrink-0 w-32 sm:w-44 cursor-pointer space-y-2"
             >
-              <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30">
+              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
                 <img
                   src={anime.posterImage}
                   alt={anime.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx158870-g875H3jE8wR8.jpg';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
-                  <Star className="w-2.5 h-2.5 fill-purple-400 text-purple-400" />
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                   <span>{anime.score}%</span>
                 </div>
               </div>
@@ -378,7 +429,7 @@ export const HomeFeed: React.FC = () => {
                   {anime.title}
                 </h3>
                 <p className="text-[11px] text-zinc-400 line-clamp-1">
-                  {anime.format} • {anime.membersCount.toLocaleString()} members
+                  {anime.format} • {anime.year}
                 </p>
               </div>
             </div>
