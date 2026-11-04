@@ -45,7 +45,7 @@ export const HeaderNav: React.FC = () => {
             aria-label="AniLife Home"
           >
             <img
-              src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+              src="/assets/images/AniLife-logo-fill.png"
               alt="AniLife Logo"
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-md shadow-purple-950/60 group-hover:scale-105 transition-transform object-cover ring-1 ring-white/10"
             />
