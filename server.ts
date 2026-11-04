@@ -14,7 +14,7 @@ const app = express();
 
 app.use(express.json());
 
-// Enable CORS on API routes
+// Enable CORS for da API
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Cache for AniChan session cookie
+// Cache for AniChan :3
 let aniChanCookie: { cookie: string; expiresAt: number } | null = null;
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36';
 
@@ -60,9 +60,6 @@ async function getAniChanSessionCookie(): Promise<string> {
   return '';
 }
 
-/**
- * Resolve MAL ID from AniList ID via AniList GraphQL
- */
 const malIdCache = new Map<number, number>();
 
 async function resolveMalId(anilistId: number): Promise<number | null> {
@@ -96,7 +93,7 @@ async function resolveMalId(anilistId: number): Promise<number | null> {
 }
 
 /**
- * 1. Zoko Provider Scraper (zokoanime.video)
+ * 1. Zoko Provider (zokoanime.video)
  */
 async function scrapeZoko(
   anilistId: number,
@@ -151,7 +148,7 @@ async function scrapeZoko(
 }
 
 /**
- * 2. Media-Index / Lili (XFDM) Direct Cloudflare Stream
+ * 2. Media-Index
  */
 async function scrapeMediaIndexLili(
   anilistId: number,
@@ -160,7 +157,7 @@ async function scrapeMediaIndexLili(
 ): Promise<ResolvedStreamSource | null> {
   try {
     const shard = calculateMediaIndexShard(anilistId);
-    const url = `https://cdn.jsdelivr.net/gh/sanilili/media-index@main/data/anime/${shard}/${anilistId}/lili.json`;
+    const url = `https://cdn.jsdelivr.net/gh/immafurryfemboy/fish@main/data/anime/${shard}/${anilistId}/lili.json`;
     const res = await fetch(url);
     if (!res.ok) return null;
 
@@ -186,7 +183,7 @@ async function scrapeMediaIndexLili(
 }
 
 /**
- * 3. AniChan Provider Scraper (anichan.to)
+ * 3. AniChan Provider (anichan.to)
  */
 async function scrapeAniChan(
   anilistId: number,
@@ -242,7 +239,7 @@ async function scrapeAniChan(
 }
 
 /**
- * 4. One Pace Provider Scraper (onepace.net)
+ * 4. One Pace Provider (onepace.net)
  */
 async function scrapeOnePace(episode: number): Promise<ResolvedStreamSource | null> {
   try {
@@ -271,7 +268,7 @@ async function scrapeOnePace(episode: number): Promise<ResolvedStreamSource | nu
   return null;
 }
 
-// GET /api/sources - Unified Anime Scraper API
+// Unified Anime Scraper
 app.get('/api/sources', async (req: Request, res: Response) => {
   const provider = (req.query.provider as string) || 'auto';
   const animeId = parseInt(req.query.animeId as string, 10);
@@ -286,7 +283,6 @@ app.get('/api/sources', async (req: Request, res: Response) => {
 
   let source: ResolvedStreamSource | null = null;
 
-  // Specific provider requested
   if (provider === 'zoko') {
     source = await scrapeZoko(animeId, episode, audio, malId);
   } else if (provider === 'xfdm' || provider === 'lili') {
@@ -297,17 +293,13 @@ app.get('/api/sources', async (req: Request, res: Response) => {
     source = await scrapeOnePace(episode);
   }
 
-  // If specific provider was not found or 'auto' / other providers were requested, race or fallback
   if (!source) {
-    // Try XFDM / Lili first (fastest instant CDN start)
     source = await scrapeMediaIndexLili(animeId, episode, audio);
   }
   if (!source) {
-    // Try Zoko next (comprehensive 1080p HLS with subtitles)
     source = await scrapeZoko(animeId, episode, audio, malId);
   }
   if (!source) {
-    // Try AniChan
     source = await scrapeAniChan(animeId, episode, audio);
   }
 
@@ -324,7 +316,7 @@ app.get('/api/sources', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/proxy-stream - Streaming and M3U8 Playlist Proxy
+// Streaming and M3U8 Playlist
 app.get('/api/proxy-stream', async (req: Request, res: Response) => {
   const targetUrl = req.query.url as string;
   const customReferer = req.query.referer as string | undefined;
@@ -343,7 +335,6 @@ app.get('/api/proxy-stream', async (req: Request, res: Response) => {
       try {
         fetchHeaders['Origin'] = new URL(customReferer).origin;
       } catch {
-        // Ignored
       }
     }
     if (req.headers.range) {
@@ -370,10 +361,8 @@ app.get('/api/proxy-stream', async (req: Request, res: Response) => {
       return;
     }
 
-    // Binary segment, subtitle, or video file stream
     res.status(upstream.status);
     upstream.headers.forEach((val, key) => {
-      // Forward relevant stream headers
       const lower = key.toLowerCase();
       if (
         lower === 'content-type' ||
@@ -418,7 +407,6 @@ async function start() {
       res.sendFile(path.resolve('dist/index.html'));
     });
   } else {
-    // Mount Vite dev server in middleware mode
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa'

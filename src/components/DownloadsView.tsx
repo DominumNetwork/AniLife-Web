@@ -72,13 +72,11 @@ export const DownloadsView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      {/* Header */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Downloads</h1>
         <p className="text-sm text-zinc-400 mt-1">Manage offline anime episodes & storage</p>
       </div>
 
-      {/* Storage meter card */}
       <div className="p-5 rounded-3xl bg-black/40 border border-purple-500/20 backdrop-blur-xl space-y-3">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
@@ -90,7 +88,6 @@ export const DownloadsView: React.FC = () => {
           </span>
         </div>
 
-        {/* Storage progress bar */}
         <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
@@ -107,7 +104,6 @@ export const DownloadsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Downloaded list */}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
           <span>Downloaded Episodes ({downloads.length})</span>

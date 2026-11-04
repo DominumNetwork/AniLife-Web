@@ -16,7 +16,6 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
     try {
       sessionStorage.setItem('anilife_intro_seen', '1');
     } catch {
-      // Ignored
     }
     setTimeout(() => {
       onClose();
@@ -27,22 +26,18 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Try playing with sound first
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Autoplay policy prevented playback with sound; mute and replay
         video.muted = true;
         setIsMuted(true);
         setNeedsUserTapForSound(true);
         video.play().catch(() => {
-          // If video cannot play at all, auto finish
           handleFinish();
         });
       });
     }
 
-    // Escape or Space to skip
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
@@ -51,7 +46,6 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // Failsafe timeout: intro video is ~5s; if stuck for 8s, auto finish
     const timer = setTimeout(() => {
       handleFinish();
     }, 8000);
@@ -96,10 +90,8 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
         className="w-full h-full object-contain max-w-5xl max-h-[90vh]"
       />
 
-      {/* Top Controls Overlay */}
       <div className="absolute top-4 sm:top-6 inset-x-4 sm:inset-x-8 flex items-center justify-between z-10 pointer-events-auto">
 
-        {/* Skip button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -113,7 +105,6 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
         </button>
       </div>
 
-      {/* Unmute prompt banner if browser blocked audio */}
       {needsUserTapForSound && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-purple-950/80 backdrop-blur-md border border-purple-500/40 text-xs font-semibold text-purple-200 flex items-center gap-2 shadow-2xl animate-pulse cursor-pointer">
           <VolumeX className="w-4 h-4 text-purple-400" />
@@ -121,7 +112,6 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
         </div>
       )}
 
-      {/* Bottom Audio toggle */}
       <div className="absolute bottom-6 right-6 z-10 pointer-events-auto">
         <button
           onClick={handleUnmuteClick}

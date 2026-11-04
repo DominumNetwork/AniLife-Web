@@ -1,8 +1,3 @@
-/**
- * AniList Public & Authenticated GraphQL Client
- * Handles real anime fetching, search, schedule, user collections, and OAuth synchronization.
- */
-
 export const ANILIST_ENDPOINT = 'https://graphql.anilist.co';
 export const ANILIST_CLIENT_ID = '55798';
 export const ANILIST_CLIENT_SECRET = 'wZ5WFRWClRvdjVRhGDxWac7NR12HrYA6bJRZ0FX3';
@@ -96,9 +91,6 @@ export interface AiringScheduleItem {
   media: AniListMedia;
 }
 
-/**
- * Execute GraphQL Query or Mutation against AniList
- */
 export async function queryAniList<T>(
   query: string,
   variables: Record<string, any> = {},
@@ -138,9 +130,6 @@ export async function queryAniList<T>(
   return json.data;
 }
 
-/**
- * Generate OAuth Authorization URL
- */
 export function getAniListOAuthUrl(redirectUri: string): string {
   const params = new URLSearchParams({
     client_id: ANILIST_CLIENT_ID,
@@ -150,9 +139,6 @@ export function getAniListOAuthUrl(redirectUri: string): string {
   return `https://anilist.co/api/v2/oauth/authorize?${params.toString()}`;
 }
 
-/**
- * Exchange authorization code for token if using code flow
- */
 export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<string> {
   const res = await fetch('https://anilist.co/api/v2/oauth/token', {
     method: 'POST',
@@ -177,9 +163,6 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
   return data.access_token;
 }
 
-/**
- * Fetch Current Authenticated User (Viewer)
- */
 export async function fetchViewerProfile(token: string): Promise<AniListUserData> {
   const query = `
     query {
@@ -208,9 +191,6 @@ export async function fetchViewerProfile(token: string): Promise<AniListUserData
   return data.Viewer;
 }
 
-/**
- * Fetch Trending Anime
- */
 export async function fetchTrendingAnime(page: number = 1, perPage: number = 15): Promise<AniListMedia[]> {
   const query = `
     query ($page: Int, $perPage: Int) {
@@ -240,9 +220,6 @@ export async function fetchTrendingAnime(page: number = 1, perPage: number = 15)
   return data.Page.media;
 }
 
-/**
- * Fetch Popular This Season Anime
- */
 export async function fetchPopularSeasonAnime(
   page: number = 1,
   perPage: number = 15,
@@ -281,9 +258,6 @@ export async function fetchPopularSeasonAnime(
   return data.Page.media;
 }
 
-/**
- * Fetch All-Time Top Rated Anime
- */
 export async function fetchTopRatedAnime(page: number = 1, perPage: number = 15): Promise<AniListMedia[]> {
   const query = `
     query ($page: Int, $perPage: Int) {
@@ -310,9 +284,6 @@ export async function fetchTopRatedAnime(page: number = 1, perPage: number = 15)
   return data.Page.media;
 }
 
-/**
- * Fetch All-Time Popular Anime
- */
 export async function fetchPopularAllTimeAnime(page: number = 1, perPage: number = 15): Promise<AniListMedia[]> {
   const query = `
     query ($page: Int, $perPage: Int) {
@@ -340,9 +311,6 @@ export async function fetchPopularAllTimeAnime(page: number = 1, perPage: number
   return data.Page.media;
 }
 
-/**
- * Live Search AniList
- */
 export async function searchAniList(
   search: string,
   genre?: string,
@@ -378,9 +346,6 @@ export async function searchAniList(
   return data.Page.media;
 }
 
-/**
- * Fetch Real Airing Schedule
- */
 export async function fetchAiringSchedule(
   startAirSec: number,
   endAirSec: number,
@@ -415,9 +380,6 @@ export async function fetchAiringSchedule(
   return data.Page.airingSchedules;
 }
 
-/**
- * Fetch User Anime Collection (Watching, Completed, Planning, Paused, Dropped)
- */
 export async function fetchUserAnimeList(
   userName: string,
   token?: string | null
@@ -476,9 +438,6 @@ export async function fetchUserAnimeList(
   return data.MediaListCollection;
 }
 
-/**
- * Mutation: Update or Save anime on user's AniList account
- */
 export async function saveUserMediaListEntry(
   token: string,
   mediaId: number,
@@ -509,9 +468,6 @@ export async function saveUserMediaListEntry(
   return res.SaveMediaListEntry;
 }
 
-/**
- * Mutation: Delete entry from user's AniList account
- */
 export async function deleteUserMediaListEntry(token: string, id: number): Promise<boolean> {
   const mutation = `
     mutation ($id: Int) {
@@ -528,9 +484,6 @@ export async function deleteUserMediaListEntry(token: string, id: number): Promi
   return res.DeleteMediaListEntry.deleted;
 }
 
-/**
- * Storage helpers for OAuth and AniList cache
- */
 const OAUTH_KEY = 'anilife_oauth_token';
 const CATALOG_CACHE_KEY = 'anilife_live_catalog_cache_v3';
 const USER_DATA_CACHE_KEY = 'anilife_anilist_data_v3';
@@ -547,7 +500,6 @@ export function saveOAuthToken(token: string): void {
   try {
     localStorage.setItem(OAUTH_KEY, token);
   } catch {
-    // Ignored
   }
 }
 
@@ -555,7 +507,6 @@ export function clearOAuthToken(): void {
   try {
     localStorage.removeItem(OAUTH_KEY);
   } catch {
-    // Ignored
   }
 }
 
@@ -573,7 +524,6 @@ export function saveCachedCatalog(catalog: any[]): void {
   try {
     localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(catalog));
   } catch {
-    // Ignored
   }
 }
 
@@ -581,7 +531,6 @@ export function saveCachedAniListData(data: any): void {
   try {
     localStorage.setItem(USER_DATA_CACHE_KEY, JSON.stringify(data));
   } catch {
-    // Ignored
   }
 }
 

@@ -53,7 +53,6 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
     const candidates = availableAnime.length > 0 ? availableAnime : liveCatalog;
 
     setTimeout(() => {
-      // Pick an item different from the current if candidates has more than 1
       let nextPick = candidates[Math.floor(Math.random() * candidates.length)];
       if (candidates.length > 1 && nextPick.id === pickedAnime.id) {
         nextPick = candidates.find(c => c.id !== pickedAnime.id) || nextPick;
@@ -113,7 +112,6 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
           </button>
         </div>
 
-        {/* Scrollable Category Chips */}
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
           {RANDOM_CATEGORIES.map((category) => {
             const isSelected = selectedFilter === category;
@@ -133,7 +131,6 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
           })}
         </div>
 
-        {/* Picked Card */}
         <div className="relative rounded-2xl overflow-hidden aspect-[16/10] border border-white/10 shadow-xl group bg-black/60">
           <img
             src={animeImage}
@@ -147,7 +144,6 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-          {/* Badges & Content */}
           <div className="absolute bottom-3.5 left-4 right-4 space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="flex items-center gap-1 text-[11px] font-bold text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2.5 py-0.5 rounded-full">
@@ -180,7 +176,6 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-2.5 pt-1">
           <button
             onClick={rollDice}

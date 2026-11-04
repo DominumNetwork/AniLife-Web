@@ -21,8 +21,8 @@ export interface Season {
 export interface RelatedAnime {
   id: string;
   title: string;
-  relation: string; // 'Season 1', 'Season 2', 'Prequel', 'Sequel', 'Spin-off', 'More like this'
-  format: string; // 'TV', 'ONA', 'Movie'
+  relation: string;
+  format: string;
   year: number;
   poster: string;
   episodesCount?: number;
@@ -36,7 +36,7 @@ export interface Anime {
   nativeTitle?: string;
   bannerImage: string;
   posterImage: string;
-  score: number; // percentage like 85
+  score: number;
   format: 'TV' | 'Movie' | 'ONA' | 'OVA' | 'Special';
   year: number;
   status: 'Finished' | 'Releasing' | 'Not Yet Aired';
@@ -45,7 +45,7 @@ export interface Anime {
   synopsis: string;
   studio: string;
   startDate: string;
-  seasonName: string; // 'Winter', 'Spring', 'Summer', 'Fall'
+  seasonName: string;
   membersCount: number;
   trailerUrl?: string;
   hasDub: boolean;
@@ -53,8 +53,8 @@ export interface Anime {
   seasons: Season[];
   related: RelatedAnime[];
   airSchedule?: {
-    dayOfWeek: number; // 0 Sun - 6 Sat
-    airTime: string; // e.g. "23:00"
+    dayOfWeek: number;
+    airTime: string;
     nextEpisode: number;
   };
 }
@@ -86,7 +86,7 @@ export interface ServerOption {
   supportsDub: boolean;
   supportsSub: boolean;
   supportsDownload: boolean;
-  badge?: string; // e.g. 'Cloudflare', 'Español', 'Hindi', 'Archive'
+  badge?: string;
   description?: string;
 }
 
@@ -114,7 +114,7 @@ export type ThemePresetName =
   | 'High contrast';
 
 export interface AppSettings {
-  // Theme & Appearance
+  // Appearance
   themePreset: ThemePresetName;
   canvasBackground: 'amoled' | 'dark';
   accentColor: string;
@@ -146,7 +146,7 @@ export interface AppSettings {
   captionSize: 'Small' | 'Medium' | 'Large';
   subtitleOffsetSec: number;
 
-  // Servers & Sources
+  // Sources
   activeServer: string;
   serverPriority: string[];
   enabledServers: string[];
@@ -157,7 +157,7 @@ export interface AppSettings {
   blurSpoilers: boolean;
   onlyWatchableEpisodes: boolean;
 
-  // Accounts & Sync
+  // Accounts
   anilistConnected: boolean;
   anilistUsername?: string;
   discordPresence: boolean;

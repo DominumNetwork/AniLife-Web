@@ -1,13 +1,3 @@
-/**
- * Anilife Media Index & Stream Provider Client
- * Connects to sanilili/media-index on jsDelivr CDN
- * Provides:
- * - Real episode lists with TMDB still backdrops, titles, runtimes, and overviews
- * - Lili direct MP4 streams from Cloudflare-fronted XFDM archive
- * - Intro and outro skip timings from AniSkip community database mirror
- * - Dub availability index and official backdrops
- */
-
 export interface MediaIndexEpisode {
   number: number;
   title: string;
@@ -42,18 +32,14 @@ export interface MediaIndexSkipData {
   recap?: [number, number];
 }
 
-const MEDIA_INDEX_BASE = 'https://cdn.jsdelivr.net/gh/sanilili/media-index@main/data';
+const MEDIA_INDEX_BASE = 'https://cdn.jsdelivr.net/gh/immafurryfemboy/fish@main/data';
 
-// In-memory cache to prevent redundant HTTP lookups
 const episodeCache = new Map<number, MediaIndexEpisode[]>();
 const liliStreamCache = new Map<number, MediaIndexLiliRecord | null>();
 const skipCache = new Map<number, MediaIndexSkipData | null>();
 let dubIndexSet: Set<number> | null = null;
 let backdropMap: Record<string, string> | null = null;
 
-/**
- * Fetch episode list for an AniList ID from media-index
- */
 export async function fetchMediaIndexEpisodes(anilistId: number): Promise<MediaIndexEpisode[]> {
   if (episodeCache.has(anilistId)) {
     return episodeCache.get(anilistId)!;
@@ -80,9 +66,6 @@ export async function fetchMediaIndexEpisodes(anilistId: number): Promise<MediaI
   return [];
 }
 
-/**
- * Fetch direct stream record (Lili / XFDM) from media-index
- */
 export async function fetchMediaIndexLiliStream(anilistId: number): Promise<MediaIndexLiliRecord | null> {
   if (liliStreamCache.has(anilistId)) {
     return liliStreamCache.get(anilistId)!;
@@ -110,9 +93,6 @@ export async function fetchMediaIndexLiliStream(anilistId: number): Promise<Medi
   return null;
 }
 
-/**
- * Fetch intro & outro skip timings from media-index skip mirror or AniSkip API
- */
 export async function fetchMediaIndexSkip(anilistId: number, episodeNum: number, malId?: number): Promise<MediaIndexSkipData | null> {
   const cacheKey = `${anilistId}_${episodeNum}`;
   
@@ -140,10 +120,8 @@ export async function fetchMediaIndexSkip(anilistId: number, episodeNum: number,
       }
     }
   } catch (e) {
-    // Fall back to AniSkip API below
   }
 
-  // Fallback: Query AniSkip API directly if MAL ID is available
   if (malId) {
     try {
       const aniskipUrl = `https://api.aniskip.com/v2/skip-times/${malId}/${episodeNum}?types[]=op&types[]=ed&types[]=mixed-op&types[]=mixed-ed&types[]=recap&episodeLength=0`;
@@ -177,9 +155,6 @@ export async function fetchMediaIndexSkip(anilistId: number, episodeNum: number,
   return null;
 }
 
-/**
- * Check if an anime has an English dub according to dub-index.json
- */
 export async function isAnimeDubbed(anilistId: number): Promise<boolean> {
   if (!dubIndexSet) {
     try {
@@ -197,9 +172,6 @@ export async function isAnimeDubbed(anilistId: number): Promise<boolean> {
   return dubIndexSet.has(anilistId);
 }
 
-/**
- * Fetch high quality TMDB backdrops
- */
 export async function fetchBackdrops(): Promise<Record<string, string>> {
   if (backdropMap) return backdropMap;
   try {
@@ -210,7 +182,6 @@ export async function fetchBackdrops(): Promise<Record<string, string>> {
       return backdropMap!;
     }
   } catch {
-    // Ignored
   }
   return {};
 }

@@ -39,7 +39,6 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="relative min-h-screen text-zinc-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white">
-      {/* Canvas background (AMOLED pure black vs Dark) */}
       <div
         className="fixed inset-0 z-0 pointer-events-none transition-colors duration-500"
         style={{
@@ -47,7 +46,6 @@ const AppContent: React.FC = () => {
         }}
       />
 
-      {/* Optional Background Anime Backdrop with dimming and blur */}
       {settings.backdropSource !== 'none' && settings.backdropImage && (
         <>
           <div
@@ -58,7 +56,6 @@ const AppContent: React.FC = () => {
               transform: settings.backdropBlur ? 'scale(1.05)' : 'scale(1)',
             }}
           />
-          {/* Dimming overlay */}
           <div
             className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300"
             style={{
@@ -74,7 +71,6 @@ const AppContent: React.FC = () => {
       )}
       <div className="fixed inset-0 z-0 bg-radial from-purple-900/10 via-transparent to-black/80 pointer-events-none" />
 
-      {/* Main App Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         <HeaderNav />
 
@@ -87,9 +83,7 @@ const AppContent: React.FC = () => {
         </main>
       </div>
 
-      {/* OVERLAYS & MODALS */}
 
-      {/* Anime Details Modal */}
       {selectedAnime && (
         <AnimeDetailModal
           anime={selectedAnime}
@@ -97,7 +91,6 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Fullscreen Video Player */}
       {activeVideo && (
         <VideoPlayer
           anime={activeVideo.anime}
@@ -107,32 +100,26 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Settings Modal */}
       {showSettingsModal && (
         <SettingsModal onClose={() => setShowSettingsModal(false)} />
       )}
 
-      {/* Random Pick Modal */}
       {showRandomModal && (
         <RandomPickModal onClose={() => setShowRandomModal(false)} />
       )}
 
-      {/* Notifications Modal */}
       {showNotificationsModal && (
         <NotificationsModal onClose={() => setShowNotificationsModal(false)} />
       )}
 
-      {/* Profile Select Modal */}
       {showProfileModal && (
         <ProfileSelectModal onClose={() => setShowProfileModal(false)} />
       )}
 
-      {/* AniList Sign In & Auth Modal */}
       {showAuthModal && (
         <AniListAuthModal onClose={() => setShowAuthModal(false)} />
       )}
 
-      {/* Animated AniLife Startup Intro */}
       {showIntro && (
         <AppIntro onClose={() => setShowIntro(false)} />
       )}

@@ -22,26 +22,10 @@ export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
   const [notifications, setNotifications] = useState([
     {
       id: 'n-1',
-      title: 'New Episode Aired!',
-      body: 'Gushing Over Magical Girls Episode 3 "The Explosive Leopard!" is now streaming on Anikoto.',
-      animeId: 'gushing-over-magical-girls',
-      epNumber: 3,
+      title: 'Development Phase',
+      body: 'AniLife is currently in development. Feel free to check back here for updates!',
       time: '2 hours ago',
       unread: true,
-    },
-    {
-      id: 'n-2',
-      title: 'Server Update: Lili CDN',
-      body: '4K HLS streaming clusters have been upgraded with 0-buffer latency.',
-      time: 'Yesterday',
-      unread: true,
-    },
-    {
-      id: 'n-3',
-      title: 'AniList Sync Complete',
-      body: 'Successfully backed up 14 shows and 248 watched episodes.',
-      time: '2 days ago',
-      unread: false,
     }
   ]);
 
@@ -55,7 +39,6 @@ export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn flex flex-col">
-      {/* Top Navbar matching screenshot 214800 */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/70 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
           <button
@@ -87,7 +70,6 @@ export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
       </div>
 
       <div className="max-w-2xl w-full mx-auto p-4 sm:p-6 flex-1">
-        {/* Error / Empty state simulation matching screenshot 214800 */}
         {hasError ? (
           <div className="my-auto py-24 text-center space-y-4">
             <h3 className="text-lg font-bold text-white">Couldn't load notifications.</h3>

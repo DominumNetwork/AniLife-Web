@@ -198,9 +198,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
             </div>
           </div>
         ) : (
-          /* SIGN IN OPTIONS TABS */
           <div className="space-y-5 animate-fadeIn">
-            {/* Tabs */}
             <div className="flex rounded-2xl bg-white/5 p-1 border border-white/10 text-xs font-semibold">
               <button
                 onClick={() => setActiveTab('oauth')}
@@ -234,7 +232,6 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
               </button>
             </div>
 
-            {/* TAB 1: 1-CLICK POPUP SIGN IN */}
             {activeTab === 'oauth' && (
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-sky-950/30 border border-purple-500/30 space-y-3">
@@ -254,7 +251,6 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
                   </button>
                 </div>
 
-                {/* Redirect URI Info for AniList Developer Console */}
                 <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-zinc-400">
                     <span className="font-semibold text-zinc-300">Client Settings Info</span>
@@ -287,7 +283,6 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
               </div>
             )}
 
-            {/* TAB 2: MANUAL TOKEN / PIN */}
             {activeTab === 'token' && (
               <form onSubmit={handleTokenSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -325,7 +320,6 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
               </form>
             )}
 
-            {/* TAB 3: USERNAME QUICK LINK */}
             {activeTab === 'username' && (
               <form onSubmit={handleUsernameSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -354,7 +348,6 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
               </form>
             )}
 
-            {/* Status Message */}
             {statusMessage && (
               <div
                 className={`p-3 rounded-xl flex items-center gap-2 text-xs font-semibold animate-fadeIn ${

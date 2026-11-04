@@ -1,8 +1,3 @@
-/**
- * Scraper Parsers and Stream Resolvers ported from the Anilili Native Client
- * (com.anilili.data.remote: ZokoProvider, AniChanProvider, XfdmProvider, PaheProvider)
- */
-
 export interface ZokoSubtitle {
   lang: string;
   label: string;
@@ -42,10 +37,6 @@ export interface ResolvedStreamSource {
 
 const ZOKO_XOR_KEY = 'otaku-embed-v1';
 
-/**
- * Decodes the obfuscated window.__P payload from Zoko (zokoanime.video)
- * Ported from com.anilili.data.remote.ZokoParser
- */
 export function decodeZokoPayload(base64Payload: string): ZokoPayload | null {
   try {
     const raw = Buffer.from(base64Payload, 'base64');
@@ -63,35 +54,22 @@ export function decodeZokoPayload(base64Payload: string): ZokoPayload | null {
   }
 }
 
-/**
- * Extracts and decodes window.__P from raw Zoko HTML
- */
 export function parseZokoHtml(html: string): ZokoPayload | null {
   const match = html.match(/window\.__P\s*=\s*["']([A-Za-z0-9+/=]+)["']/);
   if (!match || !match[1]) return null;
   return decodeZokoPayload(match[1]);
 }
 
-/**
- * Sanitizes AniChan subtitle URLs (percent-encodes raw spaces in track filenames)
- * Ported from com.anilili.data.remote.AniChanParser
- */
 export function sanitizeAniChanSubtitleUrl(url: string, baseUrl = 'https://anichan.to'): string {
   const absolute = url.startsWith('/') ? `${baseUrl}${url}` : url;
   return absolute.replace(/ /g, '%20');
 }
 
-/**
- * Calculates shard folder for sanilili/media-index (e.g. 154587 -> 154)
- */
 export function calculateMediaIndexShard(anilistId: number): number {
   if (isNaN(anilistId) || anilistId < 0) return 0;
   return Math.floor(anilistId / 1000);
 }
 
-/**
- * Resolves a relative URL against a base URL
- */
 export function resolveUrl(relativeOrAbsolute: string, baseUrl: string): string {
   try {
     return new URL(relativeOrAbsolute, baseUrl).toString();
@@ -100,10 +78,6 @@ export function resolveUrl(relativeOrAbsolute: string, baseUrl: string): string 
   }
 }
 
-/**
- * Rewrites an HLS M3U8 playlist content so all master variant and segment URLs
- * pass through the local proxy endpoint with CORS and required headers.
- */
 export function rewriteM3u8Content(
   m3u8Content: string,
   baseUrl: string,
@@ -129,7 +103,6 @@ export function rewriteM3u8Content(
       continue;
     }
 
-    // Rewrite tags containing URI="...", e.g. #EXT-X-KEY:METHOD=...,URI="..." or #EXT-X-MAP:URI="..."
     if (trimmed.startsWith('#')) {
       let tagLine = line;
       tagLine = tagLine.replace(/URI=["']([^"']+)["']/g, (_match, uri) => {
@@ -139,7 +112,6 @@ export function rewriteM3u8Content(
       continue;
     }
 
-    // This is a media segment or playlist stream URL
     rewrittenLines.push(makeProxyUrl(trimmed));
   }
 

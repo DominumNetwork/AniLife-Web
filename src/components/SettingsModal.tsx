@@ -106,7 +106,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     setTimeout(() => setDataMessage(null), 3000);
   };
 
-  // Reordering server priority
   const moveServer = (index: number, direction: 'up' | 'down') => {
     const currentPriority = settings.serverPriority || SERVERS.map(s => s.id);
     const newIdx = direction === 'up' ? index - 1 : index + 1;
@@ -130,7 +129,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn flex flex-col font-sans">
-      {/* Top Navbar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/75 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
           <button
@@ -161,7 +159,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       )}
 
       <div className="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col md:flex-row gap-6">
-        {/* Navigation Sidebar Tabs */}
         <div className="w-full md:w-56 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-2 md:pb-0">
           {[
             { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -192,14 +189,9 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           })}
         </div>
 
-        {/* Active Section Content */}
         <div className="flex-1 space-y-6">
-          {/* ======================================================== */}
-          {/* 1. APPEARANCE (Anilili ThemePresets & Canvas)            */}
-          {/* ======================================================== */}
           {activeSection === 'appearance' && (
             <div className="space-y-6 animate-fadeIn">
-              {/* LIVE PREVIEW CARD */}
               <div className="p-5 rounded-3xl bg-[#14121e] border border-white/10 shadow-2xl space-y-4">
                 <div className="flex items-center gap-2">
                   <span
@@ -231,7 +223,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
-              {/* THEME PRESETS */}
               <div className="space-y-3">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   THEME PRESETS (11 STYLES)
@@ -265,7 +256,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
-              {/* CANVAS BACKGROUND */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   BACKGROUND CANVAS
@@ -297,7 +287,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
-              {/* APP BACKDROP ARTWORK */}
               <div className="space-y-3">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   APP BACKDROP
@@ -397,7 +386,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 )}
               </div>
 
-              {/* STARTUP & INTRO ANIMATION */}
               <div className="space-y-3 pt-3 border-t border-white/10">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   STARTUP & INTRO
@@ -445,9 +433,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
           )}
 
-          {/* ======================================================== */}
-          {/* 2. PLAYER SETTINGS                                       */}
-          {/* ======================================================== */}
           {activeSection === 'player' && (
             <div className="space-y-5 animate-fadeIn">
               <div className="space-y-3">
@@ -495,7 +480,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </label>
               </div>
 
-              {/* Default Quality & Speed */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Default Quality</span>
@@ -527,9 +511,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
           )}
 
-          {/* ======================================================== */}
-          {/* 3. SUBTITLES & AUDIO                                     */}
-          {/* ======================================================== */}
           {activeSection === 'subtitles' && (
             <div className="space-y-5 animate-fadeIn">
               <div className="space-y-3">
@@ -591,12 +572,8 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
           )}
 
-          {/* ======================================================== */}
-          {/* 4. SERVERS & SOURCES (Anilili ProviderCatalog)          */}
-          {/* ======================================================== */}
           {activeSection === 'servers' && (
             <div className="space-y-4 animate-fadeIn">
-              {/* Enabled Servers Card matching user screenshots */}
               <div
                 onClick={() => setShowEnabledServersModal(true)}
                 className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 to-[#181528] border border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer shadow-lg"
@@ -674,7 +651,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                        {/* Make Default */}
                         {!isDefault && isEnabled && (
                           <button
                             onClick={() => updateSettings({ activeServer: serverId })}
@@ -684,7 +660,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           </button>
                         )}
 
-                        {/* Move Up/Down */}
                         <button
                           onClick={() => moveServer(idx, 'up')}
                           disabled={idx === 0}
@@ -700,7 +675,6 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Enable/Disable */}
                         <button
                           onClick={() => toggleServerEnabled(serverId)}
                           className={`p-1.5 rounded-lg cursor-pointer ${
