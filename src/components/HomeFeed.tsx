@@ -79,11 +79,11 @@ export const HomeFeed: React.FC = () => {
               <span className="w-1.5 h-3.5 bg-purple-500 rounded-full inline-block" />
               <span className="text-xs uppercase tracking-widest font-bold text-purple-300 flex items-center gap-1.5">
                 <img
-                  src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+                  src="/assets/images/AniLife-logo-fill.png"
                   alt=""
                   className="w-4 h-4 rounded-full shadow-sm"
                 />
-                <span>AniLife Spotlight • Live AniList</span>
+                <span>AniLife Spotlight</span>
               </span>
             </div>
 

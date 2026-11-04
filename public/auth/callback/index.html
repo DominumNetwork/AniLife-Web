@@ -54,14 +54,12 @@
       var token = null;
       var code = null;
 
-      // Extract token from hash: #access_token=XYZ&token_type=Bearer
       if (window.location.hash) {
         var hashStr = window.location.hash.substring(1);
         var hashParams = new URLSearchParams(hashStr);
         token = hashParams.get('access_token');
       }
 
-      // Extract code from query params: ?code=XYZ
       if (window.location.search) {
         var searchParams = new URLSearchParams(window.location.search);
         code = searchParams.get('code');

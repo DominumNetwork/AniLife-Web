@@ -98,12 +98,6 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
 
       {/* Top Controls Overlay */}
       <div className="absolute top-4 sm:top-6 inset-x-4 sm:inset-x-8 flex items-center justify-between z-10 pointer-events-auto">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-            AniLife Intro
-          </span>
-        </div>
 
         {/* Skip button */}
         <button
