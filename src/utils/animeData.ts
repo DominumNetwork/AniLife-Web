@@ -1,5 +1,12 @@
 import { Anime, ServerOption } from '../types/anime';
 
+const SAMPLE_STREAMS = [
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+];
+
 export const SERVERS: ServerOption[] = [
   { id: 'bee', name: 'Bee', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true, badge: 'Fast' },
   { id: 'anichan', name: 'AniChan', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },

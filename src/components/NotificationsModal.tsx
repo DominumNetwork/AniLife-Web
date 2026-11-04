@@ -24,6 +24,8 @@ export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
       id: 'n-1',
       title: 'Development Phase',
       body: 'AniLife is currently in development. Feel free to check back here for updates!',
+      animeId: null,
+      epNumber: null,
       time: '2 hours ago',
       unread: true,
     }
