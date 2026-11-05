@@ -498,19 +498,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const initiateAniListOAuth = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-    const redirectUri = `${origin}/auth/callback`;
+    const redirectUri = 'https://anilife-web.vercel.app/auth/callback';
     const authUrl = getAniListOAuthUrl(redirectUri);
-
-    const popup = window.open(
-      authUrl,
-      'anilist_oauth_popup',
-      'width=620,height=720,menubar=no,toolbar=no,status=no'
-    );
-
-    if (!popup) {
-      alert('Popup was blocked by your browser. Please allow popups for this site to sign in with AniList.');
-    }
+    window.location.href = authUrl;
   };
 
   const loginWithToken = async (token: string): Promise<boolean> => {
