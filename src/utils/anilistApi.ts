@@ -141,11 +141,12 @@ export async function queryAniList<T>(
 /**
  * Generate OAuth Authorization URL
  */
-export function getAniListOAuthUrl(redirectUri: string): string {
+export function getAniListOAuthUrl(redirectUri?: string): string {
+  const fixedUri = 'https://anilife-web.vercel.app/auth/callback';
   const params = new URLSearchParams({
     client_id: ANILIST_CLIENT_ID,
-    response_type: 'token',
-    redirect_uri: redirectUri,
+    response_type: 'code',
+    redirect_uri: redirectUri || fixedUri,
   });
   return `https://anilist.co/api/v2/oauth/authorize?${params.toString()}`;
 }
@@ -153,7 +154,8 @@ export function getAniListOAuthUrl(redirectUri: string): string {
 /**
  * Exchange authorization code for token if using code flow
  */
-export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<string> {
+export async function exchangeCodeForToken(code: string, redirectUri?: string): Promise<string> {
+  const fixedUri = 'https://anilife-web.vercel.app/auth/callback';
   const res = await fetch('/api/anilist/token', {
     method: 'POST',
     headers: {
@@ -162,7 +164,7 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
     },
     body: JSON.stringify({
       code,
-      redirect_uri: redirectUri,
+      redirect_uri: redirectUri || fixedUri,
     }),
   });
 

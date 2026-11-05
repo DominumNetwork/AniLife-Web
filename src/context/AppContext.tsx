@@ -39,6 +39,7 @@ import {
   fetchUserAnimeList,
   saveUserMediaListEntry,
   getAniListOAuthUrl,
+  exchangeCodeForToken,
   loadOAuthToken,
   saveOAuthToken,
   clearOAuthToken,
@@ -253,8 +254,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [settings.accentColor, settings.canvasBackground]);
 
-  // Handle OAuth postMessage from popup and URL Hash on boot
+  // Handle OAuth postMessage, URL Hash, and Authorization Code on boot
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const queryParams = new URLSearchParams(window.location.search);
+      const code = queryParams.get('code');
+      if (code) {
+        exchangeCodeForToken(code, 'https://anilife-web.vercel.app/auth/callback').then(token => {
+          if (token) {
+            saveOAuthToken(token);
+            if (window.opener) {
+              try {
+                window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', token }, '*');
+                window.close();
+              } catch {}
+            }
+            loginWithToken(token);
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }).catch(err => {
+          console.error('Code exchange failed:', err);
+        });
+      }
+    }
+
     if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const token = hashParams.get('access_token');
