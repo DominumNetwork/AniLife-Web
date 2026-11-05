@@ -33,7 +33,7 @@ export const POPULAR_AVATARS = [
   { name: 'Puc', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b90187-xJXlD84KXl3t.jpg' },
   { name: 'Veldora Tempest', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b128034-Gg5MrpTFNSv8.png' },
   { name: 'Kazuma', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b89364-7Th8Tv1XKJtt.png' },
-  { name: 'AniLife Silhouette', url: '/assets/images/avatar_green_silhouette.webp' }
+  { name: 'AniLife', url: '/assets/images/Anilife-Logo.png' }
 ];
 
 export const THEME_PRESETS: Record<ThemePresetName, { canvas: 'amoled' | 'dark'; accent: string; label: string }> = {
