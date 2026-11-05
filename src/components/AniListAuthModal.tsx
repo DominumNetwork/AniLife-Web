@@ -172,7 +172,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
         {activeTab === 'token' && (
           <form onSubmit={handleTokenSubmit} className="space-y-4 pt-1">
             <p className="text-xs text-zinc-400">
-              If popups are blocked or your redirect URL is empty, copy your AniList token or PIN and paste it here:
+              Click <span className="text-white font-semibold">Sign in with AniList</span>, authorize the app, and paste your access token (`access_token=...`) or PIN here:
             </p>
             <div className="space-y-1">
               <input

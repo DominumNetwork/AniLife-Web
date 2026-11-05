@@ -259,6 +259,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const token = hashParams.get('access_token');
       if (token) {
+        saveOAuthToken(token);
+        if (window.opener) {
+          try {
+            window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', token }, '*');
+            window.close();
+          } catch {}
+        }
         loginWithToken(token);
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
