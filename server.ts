@@ -177,13 +177,15 @@ async function scrapeMediaIndexLili(
       const epKey = String(episode);
       const epPath = data.episodes[epKey];
       if (epPath) {
+        const directUrl = `${data.base}${epPath}`;
+        const proxiedUrl = `/api/proxy-stream?url=${encodeURIComponent(directUrl)}&referer=${encodeURIComponent('https://play.xfvod.pro:8088/')}`;
         return {
           provider: 'lili',
-          streamUrl: `${data.base}${epPath}`,
+          streamUrl: proxiedUrl,
           quality: '1080p',
           format: 'mp4',
           audio,
-          referer: 'https://cdn.jsdelivr.net/'
+          referer: 'https://play.xfvod.pro:8088/'
         };
       }
     }
@@ -264,9 +266,11 @@ async function scrapeOnePace(episode: number): Promise<ResolvedStreamSource | nu
     const matches = [...text.matchAll(regex)].map(m => m[1]);
     const fileId = matches[episode - 1] || matches[0];
     if (fileId) {
+      const directUrl = `https://pixeldrain.net/api/file/${fileId}`;
+      const proxiedUrl = `/api/proxy-stream?url=${encodeURIComponent(directUrl)}&referer=${encodeURIComponent('https://onepace.net/')}`;
       return {
         provider: 'onepace',
-        streamUrl: `https://pixeldrain.net/api/file/${fileId}`,
+        streamUrl: proxiedUrl,
         quality: '1080p',
         format: 'mp4',
         audio: 'sub',

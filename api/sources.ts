@@ -92,13 +92,14 @@ async function scrapeMediaIndexLili(
       const epPath = data.episodes[epKey];
       if (epPath) {
         const directUrl = `${data.base}${epPath}`;
+        const proxiedUrl = `/api/proxy-stream?url=${encodeURIComponent(directUrl)}&referer=${encodeURIComponent('https://play.xfvod.pro:8088/')}`;
         return {
           provider: 'lili',
-          streamUrl: directUrl,
+          streamUrl: proxiedUrl,
           quality: '1080p',
           format: 'mp4',
           audio,
-          referer: 'https://cdn.jsdelivr.net/'
+          referer: 'https://play.xfvod.pro:8088/'
         };
       }
     }
