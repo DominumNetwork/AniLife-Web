@@ -106,6 +106,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     setTimeout(() => setDataMessage(null), 3000);
   };
 
+  // Reordering server priority
   const moveServer = (index: number, direction: 'up' | 'down') => {
     const currentPriority = settings.serverPriority || SERVERS.map(s => s.id);
     const newIdx = direction === 'up' ? index - 1 : index + 1;
@@ -129,6 +130,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn flex flex-col font-sans">
+      {/* Top Navbar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/75 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
           <button
@@ -159,6 +161,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       )}
 
       <div className="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col md:flex-row gap-6">
+        {/* Navigation Sidebar Tabs */}
         <div className="w-full md:w-56 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar pb-2 md:pb-0">
           {[
             { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -189,9 +192,14 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           })}
         </div>
 
+        {/* Active Section Content */}
         <div className="flex-1 space-y-6">
+          {/* ======================================================== */}
+          {/* 1. APPEARANCE (Anilili ThemePresets & Canvas)            */}
+          {/* ======================================================== */}
           {activeSection === 'appearance' && (
             <div className="space-y-6 animate-fadeIn">
+              {/* LIVE PREVIEW CARD */}
               <div className="p-5 rounded-3xl bg-[#14121e] border border-white/10 shadow-2xl space-y-4">
                 <div className="flex items-center gap-2">
                   <span
@@ -223,6 +231,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
+              {/* THEME PRESETS */}
               <div className="space-y-3">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   THEME PRESETS (11 STYLES)
@@ -256,6 +265,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
+              {/* CANVAS BACKGROUND */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   BACKGROUND CANVAS
@@ -287,6 +297,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
               </div>
 
+              {/* APP BACKDROP ARTWORK */}
               <div className="space-y-3">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   APP BACKDROP
@@ -386,53 +397,112 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 )}
               </div>
 
+              {/* NAVIGATION & LAYOUT */}
               <div className="space-y-3 pt-3 border-t border-white/10">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                  STARTUP & INTRO
+                  NAVIGATION & LAYOUT
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
-                  <label className="flex items-center justify-between cursor-pointer">
-                    <div className="pr-4">
-                      <div className="text-sm font-semibold text-white flex items-center gap-2">
-                        <span>Play Startup Video Intro</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                          Glitch Intro
-                        </span>
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold text-white">Layout Style</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => updateSettings({ navigationLayout: 'sidebar' })}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          settings.navigationLayout === 'sidebar'
+                            ? 'bg-[#74cf66] text-black shadow-md'
+                            : 'bg-white/5 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        Expandable Sidebar (Desktop)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateSettings({ navigationLayout: 'topbar' })}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          settings.navigationLayout === 'topbar'
+                            ? 'bg-[#74cf66] text-black shadow-md'
+                            : 'bg-white/5 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        Top Navbar
+                      </button>
+                    </div>
+                  </div>
+
+                  <label className="flex items-center justify-between cursor-pointer pt-2 border-t border-white/5">
+                    <div>
+                      <div className="text-sm font-semibold text-white">Auto-hide navigation bar</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">
+                        Automatically hide it when inactive, and show it when the mouse cursor approaches
                       </div>
-                      <div className="text-xs text-zinc-400 mt-1">
-                        Plays the official animated AniLife glitch video with audio when launching the app
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={settings.autoHideNav}
+                      onChange={(e) => updateSettings({ autoHideNav: e.target.checked })}
+                      className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer shrink-0"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* STARTUP ANIMATION (Screenshot 1) */}
+              <div className="space-y-3 pt-3 border-t border-white/10">
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <div className="text-sm font-semibold text-white">
+                        Show the AniLife animation when the app opens.
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={settings.playAppIntro}
                       onChange={(e) => updateSettings({ playAppIntro: e.target.checked })}
-                      className="w-5 h-5 accent-purple-500 rounded cursor-pointer shrink-0"
+                      className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer shrink-0"
                     />
                   </label>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-white/5">
-                    <span className="text-xs text-zinc-400">
-                      Preview animation and sound effects
-                    </span>
-                    <button
-                      onClick={() => {
-                        onClose();
-                        playIntroAnimation();
-                      }}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors cursor-pointer shadow-md shadow-purple-600/30"
-                      title="Preview AniLife Intro Animation"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      <span>Preview Intro</span>
-                    </button>
+                  {/* TITLE DISPLAY LANGUAGE (Screenshot 1) */}
+                  <div className="pt-3 border-t border-white/5 space-y-2">
+                    <div className="text-sm font-bold text-white">
+                      Title display language
+                    </div>
+                    <div className="text-xs text-zinc-400">
+                      Choose which AniList title to show across browse, search, library and the player.
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      {(['english', 'romaji', 'native'] as const).map((lang) => {
+                        const isSelected = settings.titleLanguage === lang;
+                        const label = lang === 'english' ? 'English' : lang === 'romaji' ? 'Romaji' : 'Native';
+                        return (
+                          <button
+                            key={lang}
+                            type="button"
+                            onClick={() => updateSettings({ titleLanguage: lang })}
+                            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                              isSelected
+                                ? 'bg-[#74cf66] text-black border-[#74cf66] shadow-[0_0_12px_rgba(116,207,102,0.3)]'
+                                : 'bg-transparent border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* ======================================================== */}
+          {/* 2. PLAYER SETTINGS                                       */}
+          {/* ======================================================== */}
           {activeSection === 'player' && (
             <div className="space-y-5 animate-fadeIn">
               <div className="space-y-3">
@@ -480,6 +550,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </label>
               </div>
 
+              {/* Default Quality & Speed */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Default Quality</span>
@@ -511,6 +582,9 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
           )}
 
+          {/* ======================================================== */}
+          {/* 3. SUBTITLES & AUDIO                                     */}
+          {/* ======================================================== */}
           {activeSection === 'subtitles' && (
             <div className="space-y-5 animate-fadeIn">
               <div className="space-y-3">
@@ -572,8 +646,12 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
           )}
 
+          {/* ======================================================== */}
+          {/* 4. SERVERS & SOURCES (Anilili ProviderCatalog)          */}
+          {/* ======================================================== */}
           {activeSection === 'servers' && (
             <div className="space-y-4 animate-fadeIn">
+              {/* Enabled Servers Card matching user screenshots */}
               <div
                 onClick={() => setShowEnabledServersModal(true)}
                 className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 to-[#181528] border border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer shadow-lg"
@@ -651,6 +729,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        {/* Make Default */}
                         {!isDefault && isEnabled && (
                           <button
                             onClick={() => updateSettings({ activeServer: serverId })}
@@ -660,6 +739,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           </button>
                         )}
 
+                        {/* Move Up/Down */}
                         <button
                           onClick={() => moveServer(idx, 'up')}
                           disabled={idx === 0}
@@ -675,6 +755,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
 
+                        {/* Enable/Disable */}
                         <button
                           onClick={() => toggleServerEnabled(serverId)}
                           className={`p-1.5 rounded-lg cursor-pointer ${
@@ -697,20 +778,21 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           {/* ======================================================== */}
           {activeSection === 'accounts' && (
             <div className="space-y-5 animate-fadeIn">
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-950/40 to-black border border-purple-500/30 space-y-4">
+              {/* AniList Card */}
+              <div className="p-5 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
                       src={currentUser?.avatar?.large || 'https://anilist.co/img/icons/icon.svg'}
                       alt="AniList"
-                      className="w-12 h-12 rounded-full object-cover border-2 border-purple-400"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[#74cf66]"
                     />
                     <div>
                       <h3 className="font-bold text-sm text-white">
                         {currentUser?.name ? `@${currentUser.name}` : 'AniList Account'}
                       </h3>
-                      <p className="text-xs text-purple-300">
-                        {oauthToken ? 'Connected via OAuth 2.0 (Client 55798)' : 'Not signed in'}
+                      <p className="text-xs text-zinc-400">
+                        {oauthToken ? 'Signed in with Client 55798' : 'Not signed in'}
                       </p>
                     </div>
                   </div>
@@ -726,9 +808,9 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   ) : (
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs shadow-md shadow-[#74cf66]/20 cursor-pointer"
                     >
-                      Sign In to AniList
+                      AniList Login
                     </button>
                   )}
                 </div>
@@ -739,13 +821,77 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     <button
                       onClick={syncAniList}
                       disabled={isSyncingAniList}
-                      className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 font-bold cursor-pointer"
+                      className="flex items-center gap-1.5 text-[#74cf66] hover:text-white font-bold cursor-pointer"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${isSyncingAniList ? 'animate-spin' : ''}`} />
                       <span>{isSyncingAniList ? 'Syncing...' : 'Sync Now'}</span>
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Discord Rich Presence & Linking */}
+              <div className="p-5 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] font-black text-xl">
+                      D
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-white">
+                        {settings.discordConnected && settings.discordUsername
+                          ? settings.discordUsername
+                          : 'Discord Integration'}
+                      </h3>
+                      <p className="text-xs text-zinc-400">
+                        {settings.discordConnected ? 'Linked' : 'Rich Presence Status'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (settings.discordConnected) {
+                        updateSettings({
+                          discordConnected: false,
+                          discordUsername: undefined,
+                          discordAvatar: undefined
+                        });
+                        showNotice('Discord disconnected');
+                      } else {
+                        updateSettings({
+                          discordConnected: true,
+                          discordUsername: 'AniLifeUser#0001'
+                        });
+                        showNotice('Discord linked successfully');
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      settings.discordConnected
+                        ? 'bg-zinc-800 text-zinc-300 hover:text-white'
+                        : 'bg-[#5865F2] hover:bg-[#4752c4] text-white'
+                    }`}
+                  >
+                    {settings.discordConnected ? 'Disconnect' : 'Link Discord'}
+                  </button>
+                </div>
+
+                <label className="flex items-center justify-between pt-3 border-t border-white/5 cursor-pointer">
+                  <div>
+                    <div className="text-xs font-semibold text-white">
+                      Show watching anime on Discord status
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Broadcasts currently playing anime, episode number, and timestamp to Discord Rich Presence
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.discordRichPresence}
+                    onChange={(e) => updateSettings({ discordRichPresence: e.target.checked })}
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
+                  />
+                </label>
               </div>
             </div>
           )}
@@ -854,46 +1000,33 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           {/* ======================================================== */}
           {activeSection === 'about' && (
             <div className="space-y-4 animate-fadeIn text-xs">
-              <div className="p-5 rounded-3xl bg-[#14121e] border border-white/10 space-y-3">
+              <div className="p-5 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-3">
                 <div className="flex items-center gap-3.5">
                   <img
-                    src="/assets/aistudio/AniLife-logo-fill_1b9d5e38.png"
+                    src="/assets/images/Anilife-Logo.png"
                     alt="AniLife Logo"
-                    className="w-12 h-12 rounded-2xl shadow-xl shadow-purple-950/70 ring-1 ring-white/15 object-cover"
+                    className="w-12 h-12 rounded-full ring-2 ring-[#74cf66] object-cover"
                   />
                   <div>
-                    <h3 className="text-base font-black text-white tracking-wide">AniLife Web</h3>
-                    <p className="text-xs text-purple-300">Version 2.4.0 • Official Client</p>
+                    <h3 className="text-base font-black text-white tracking-wide">AniLife</h3>
+                    <p className="text-xs text-[#74cf66]">Version 3.0.0 • Desktop & Web Edition</p>
                   </div>
                 </div>
                 <p className="text-zinc-300 leading-relaxed text-xs">
-                  Anilife is a clean, modern anime client built with real AniList GraphQL integration, community skip timings, and sanilili media index streaming pipelines.
+                  AniLife is an anime streaming client with AniList GraphQL sync, Discord Rich Presence, and community media-index streaming sources.
                 </p>
               </div>
 
               <div className="space-y-2">
                 <a
-                  href="https://github.com/sanilili/media-index"
+                  href="https://github.com/anilifecommunity/media-index"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 hover:text-white"
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 hover:text-white"
                 >
-                  <div className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-purple-400" />
-                    <span className="font-semibold">sanilili/media-index</span>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-zinc-500" />
-                </a>
-
-                <a
-                  href="https://github.com/sanilili/Anilili"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 hover:text-white"
-                >
-                  <div className="flex items-center gap-2">
-                    <Server className="w-4 h-4 text-purple-400" />
-                    <span className="font-semibold">sanilili/Anilili (Architecture & Providers)</span>
+                  <div className="flex items-center gap-2.5">
+                    <Database className="w-4 h-4 text-[#74cf66]" />
+                    <span className="font-semibold">anilifecommunity/media-index</span>
                   </div>
                   <ExternalLink className="w-4 h-4 text-zinc-500" />
                 </a>

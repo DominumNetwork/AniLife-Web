@@ -1,129 +1,72 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Volume2, VolumeX, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 interface AppIntroProps {
-  onClose: () => void;
+  onFinish: () => void;
 }
 
-export const AppIntro: React.FC<AppIntroProps> = ({ onClose }) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+export const AppIntro: React.FC<AppIntroProps> = ({ onFinish }) => {
+  const [progress, setProgress] = useState(0);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [needsUserTapForSound, setNeedsUserTapForSound] = useState(false);
-
-  const handleFinish = () => {
-    setIsFadingOut(true);
-    try {
-      sessionStorage.setItem('anilife_intro_seen', '1');
-    } catch {
-    }
-    setTimeout(() => {
-      onClose();
-    }, 450);
-  };
+  const [imgSrc, setImgSrc] = useState('/assets/images/Anilife-Animated-Logo-V4.gif');
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const startTime = Date.now();
+    const duration = 2200; // 2.2s loading animation
 
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        video.muted = true;
-        setIsMuted(true);
-        setNeedsUserTapForSound(true);
-        video.play().catch(() => {
-          handleFinish();
-        });
-      });
-    }
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, Math.round((elapsed / duration) * 100));
+      setProgress(pct);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        handleFinish();
+      if (pct >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsFadingOut(true);
+          setTimeout(() => {
+            try {
+              sessionStorage.setItem('anilife_intro_seen', '1');
+            } catch {}
+            onFinish();
+          }, 350);
+        }, 150);
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
+    }, 25);
 
-    const timer = setTimeout(() => {
-      handleFinish();
-    }, 8000);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      clearTimeout(timer);
-    };
-  }, []);
-
-  const handleUnmuteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-      if (!videoRef.current.muted) {
-        setNeedsUserTapForSound(false);
-      }
-    }
-  };
+    return () => clearInterval(interval);
+  }, [onFinish]);
 
   return (
     <div
-      onClick={() => {
-        if (needsUserTapForSound && videoRef.current) {
-          videoRef.current.muted = false;
-          setIsMuted(false);
-          setNeedsUserTapForSound(false);
-        }
-      }}
-      className={`fixed inset-0 z-[200] bg-black flex items-center justify-center select-none transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center transition-opacity duration-300 select-none ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      {/* Intro Video */}
-      <video
-        ref={videoRef}
-        src="/assets/videos/AniLife-Intro.mp4"
-        playsInline
-        autoPlay
-        onEnded={handleFinish}
-        className="w-full h-full object-contain max-w-5xl max-h-[90vh]"
-      />
-
-      <div className="absolute top-4 sm:top-6 inset-x-4 sm:inset-x-8 flex items-center justify-between z-10 pointer-events-auto">
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleFinish();
-          }}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-bold text-white transition-all transform hover:scale-105 cursor-pointer shadow-lg"
-          title="Skip Intro (Esc)"
-        >
-          <span>Skip</span>
-          <X className="w-3.5 h-3.5 text-zinc-300" />
-        </button>
-      </div>
-
-      {needsUserTapForSound && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-purple-950/80 backdrop-blur-md border border-purple-500/40 text-xs font-semibold text-purple-200 flex items-center gap-2 shadow-2xl animate-pulse cursor-pointer">
-          <VolumeX className="w-4 h-4 text-purple-400" />
-          <span>Click anywhere to unmute audio</span>
+      <div className="flex flex-col items-center justify-center space-y-6">
+        {/* Animated AniLife Logo GIF */}
+        <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
+          <img
+            src={imgSrc}
+            onError={() => {
+              // Fallback to static clean logo
+              setImgSrc('/assets/images/Anilife-Logo.png');
+            }}
+            alt="AniLife"
+            className="w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(116,207,102,0.4)] animate-pulse"
+          />
         </div>
-      )}
 
-      <div className="absolute bottom-6 right-6 z-10 pointer-events-auto">
-        <button
-          onClick={handleUnmuteClick}
-          className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-white transition-all cursor-pointer shadow-lg"
-          title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4 text-zinc-300" />
-          ) : (
-            <Volume2 className="w-4 h-4 text-purple-300" />
-          )}
-        </button>
+        {/* Animated Loading Bar */}
+        <div className="w-56 sm:w-64 flex flex-col items-center space-y-2">
+          <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
+            <div
+              className="h-full bg-[#74cf66] rounded-full transition-all duration-75 shadow-[0_0_12px_#74cf66]"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="text-[11px] font-medium text-zinc-500 tracking-wider">
+            Loading AniLife...
+          </div>
+        </div>
       </div>
     </div>
   );

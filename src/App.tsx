@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { HeaderNav } from './components/HeaderNav';
 import { HomeFeed } from './components/HomeFeed';
@@ -11,7 +11,7 @@ import { VideoPlayer } from './components/VideoPlayer';
 import { SettingsModal } from './components/SettingsModal';
 import { RandomPickModal } from './components/RandomPickModal';
 import { NotificationsModal } from './components/NotificationsModal';
-import { ProfileSelectModal } from './components/ProfileSelectModal';
+import { CrunchyrollProfileScreen } from './components/CrunchyrollProfileScreen';
 import { AniListAuthModal } from './components/AniListAuthModal';
 import { AppIntro } from './components/AppIntro';
 
@@ -37,8 +37,17 @@ const AppContent: React.FC = () => {
     settings,
   } = useApp();
 
+  const [hasSelectedProfileSession, setHasSelectedProfileSession] = useState<boolean>(() => {
+    try {
+      return Boolean(sessionStorage.getItem('anilife_profile_selected'));
+    } catch {
+      return false;
+    }
+  });
+
   return (
-    <div className="relative min-h-screen text-zinc-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white">
+    <div className="relative min-h-screen text-zinc-100 flex flex-col font-sans selection:bg-[#74cf66] selection:text-black">
+      {/* Canvas background (AMOLED pure black vs Dark) */}
       <div
         className="fixed inset-0 z-0 pointer-events-none transition-colors duration-500"
         style={{
@@ -46,6 +55,7 @@ const AppContent: React.FC = () => {
         }}
       />
 
+      {/* Optional Background Anime Backdrop */}
       {settings.backdropSource !== 'none' && settings.backdropImage && (
         <>
           <div
@@ -69,9 +79,13 @@ const AppContent: React.FC = () => {
           />
         </>
       )}
-      <div className="fixed inset-0 z-0 bg-radial from-purple-900/10 via-transparent to-black/80 pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      {/* Main App Content */}
+      <div
+        className={`relative z-10 flex flex-col min-h-screen transition-all ${
+          settings.navigationLayout === 'sidebar' ? 'md:pl-16' : ''
+        }`}
+      >
         <HeaderNav />
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 pt-5">
@@ -83,7 +97,31 @@ const AppContent: React.FC = () => {
         </main>
       </div>
 
+      {/* OVERLAYS & MODALS */}
 
+      {/* Startup Loading Screen */}
+      {showIntro && (
+        <AppIntro
+          onFinish={() => {
+            setShowIntro(false);
+          }}
+        />
+      )}
+
+      {/* Crunchyroll-style Profile Selection Screen (after loading screen or when switching profile) */}
+      {!showIntro && (!hasSelectedProfileSession || showProfileModal) && (
+        <CrunchyrollProfileScreen
+          onSelectProfile={() => {
+            setHasSelectedProfileSession(true);
+            setShowProfileModal(false);
+            try {
+              sessionStorage.setItem('anilife_profile_selected', '1');
+            } catch {}
+          }}
+        />
+      )}
+
+      {/* Anime Details Modal */}
       {selectedAnime && (
         <AnimeDetailModal
           anime={selectedAnime}
@@ -91,6 +129,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
+      {/* Fullscreen Video Player */}
       {activeVideo && (
         <VideoPlayer
           anime={activeVideo.anime}
@@ -100,28 +139,24 @@ const AppContent: React.FC = () => {
         />
       )}
 
+      {/* Settings Modal */}
       {showSettingsModal && (
         <SettingsModal onClose={() => setShowSettingsModal(false)} />
       )}
 
+      {/* Random Pick Modal */}
       {showRandomModal && (
         <RandomPickModal onClose={() => setShowRandomModal(false)} />
       )}
 
+      {/* Notifications Modal */}
       {showNotificationsModal && (
         <NotificationsModal onClose={() => setShowNotificationsModal(false)} />
       )}
 
-      {showProfileModal && (
-        <ProfileSelectModal onClose={() => setShowProfileModal(false)} />
-      )}
-
+      {/* AniList Auth Modal */}
       {showAuthModal && (
         <AniListAuthModal onClose={() => setShowAuthModal(false)} />
-      )}
-
-      {showIntro && (
-        <AppIntro onClose={() => setShowIntro(false)} />
       )}
     </div>
   );

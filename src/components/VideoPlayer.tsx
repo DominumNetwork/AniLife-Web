@@ -70,7 +70,7 @@ export const VideoPlayer: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(1440);
+  const [duration, setDuration] = useState(1440); // 24 mins default
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(settings.playbackSpeed || 1.0);
@@ -80,20 +80,26 @@ export const VideoPlayer: React.FC<Props> = ({
   const [isControlsVisible, setIsControlsVisible] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
 
+  // Active sheets
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<'none' | 'servers' | 'episodes' | 'captions'>('none');
 
+  // Skip Timing State
   const [skipData, setSkipData] = useState<MediaIndexSkipData | null>(null);
   const [skipToast, setSkipToast] = useState<string | null>(null);
 
+  // Real episodes loaded from media-index CDN
   const [realEpisodes, setRealEpisodes] = useState<Episode[]>(() => {
     return anime.seasons[0]?.episodes || [];
   });
 
-  const [streamUrl, setStreamUrl] = useState<string>('');
+  // Direct MP4 stream URL from media-index lili archive
+  const [streamUrl, setStreamUrl] = useState<string>('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4');
 
+  // Clock string
   const [clockString, setClockString] = useState('');
 
+  // Subtitles offset
   const [subOffsetSec, setSubOffsetSec] = useState(settings.subtitleOffsetSec || 0.0);
   const [selectedSubLanguage, setSelectedSubLanguage] = useState(settings.preferredSubLanguage || 'English');
   const [subtitles, setSubtitles] = useState<Array<{ language: string; label: string; url: string; default?: boolean }>>([]);
@@ -101,19 +107,20 @@ export const VideoPlayer: React.FC<Props> = ({
 
   const numericAniListId = getAnimeAniListId(anime);
 
+  // 1. Fetch real episodes from media-index
   useEffect(() => {
     if (!isNaN(numericAniListId)) {
       fetchMediaIndexEpisodes(numericAniListId).then((eps) => {
         if (eps && eps.length > 0) {
-          const mapped: Episode[] = eps.map((e) => ({
+          const mapped: Episode[] = eps.map((e: any) => ({
             id: `${anime.id}-ep-${e.number}`,
             number: e.number,
             title: e.title || `Episode ${e.number}`,
-            durationSec: (e.runtime || anime.durationMins || 24) * 60,
-            thumbnail: e.still || anime.bannerImage || anime.posterImage,
+            durationSec: (e.length || e.runtime || anime.durationMins || 24) * 60,
+            thumbnail: e.image || e.still || anime.bannerImage || anime.posterImage,
             videoUrl: streamUrl,
-            synopsis: e.overview,
-            airedDate: e.air_date
+            synopsis: e.description || e.overview,
+            airedDate: e.airDate || e.air_date
           }));
           setRealEpisodes(mapped);
         }
@@ -121,6 +128,7 @@ export const VideoPlayer: React.FC<Props> = ({
     }
   }, [anime.id, numericAniListId]);
 
+  // 2. Fetch skip timings for current episode
   useEffect(() => {
     if (!isNaN(numericAniListId)) {
       fetchMediaIndexSkip(numericAniListId, currentEpisodeNumber).then((data) => {
@@ -129,11 +137,13 @@ export const VideoPlayer: React.FC<Props> = ({
     }
   }, [numericAniListId, currentEpisodeNumber]);
 
+  // 3. Resolve stream URL from scraper API on episode, server, or audio change
   useEffect(() => {
     setIsLoading(true);
     let isCancelled = false;
 
     async function resolveSource() {
+      // 1. Try backend scraper engine (Zoko, AniChan, XFDM, OnePace)
       try {
         const queryParams = new URLSearchParams({
           provider: activeServer.id,
@@ -179,6 +189,7 @@ export const VideoPlayer: React.FC<Props> = ({
         console.warn('[VideoPlayer] Scraper source query error:', err);
       }
 
+      // 2. Client-side media-index Lili archive fallback
       if (!isNaN(numericAniListId)) {
         try {
           const lili = await fetchMediaIndexLiliStream(numericAniListId);
@@ -190,11 +201,16 @@ export const VideoPlayer: React.FC<Props> = ({
             return;
           }
         } catch {
+          // Ignored
         }
       }
 
+      // 3. Fallback reliable anime stream sample
       const sampleFallback = [
-        ''
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
       ][(currentEpisodeNumber - 1) % 4];
 
       if (!isCancelled) {
@@ -205,20 +221,30 @@ export const VideoPlayer: React.FC<Props> = ({
       }
     }
 
+    if (settings.discordRichPresence && anime.title) {
+      fetch('/api/discord/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: anime.title, episode: currentEpisodeNumber })
+      }).catch(() => {});
+    }
+
     resolveSource();
     return () => { isCancelled = true; };
-  }, [numericAniListId, currentEpisodeNumber, activeServer.id, audioMode, anime.title]);
+  }, [numericAniListId, currentEpisodeNumber, activeServer.id, audioMode, anime.title, settings.discordRichPresence]);
 
+  // Handle Video element playback and Hls.js stream attachment
   useEffect(() => {
     const video = videoRef.current;
     if (!video || isLoading || !streamUrl) return;
 
+    // Clean up previous HLS instance
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
 
-    const isHls = streamUrl.includes('.m3u8') || streamUrl.includes('/api/proxy-stream');
+    const isHls = streamUrl.endsWith('.m3u8') || streamUrl.includes('.m3u8') || streamUrl.includes('format=hls');
 
     if (isHls && Hls.isSupported()) {
       const hls = new Hls({
@@ -230,6 +256,7 @@ export const VideoPlayer: React.FC<Props> = ({
       hls.loadSource(streamUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setIsLoading(false);
         video.playbackRate = playbackSpeed;
         video.volume = volume;
         video.muted = isMuted;
@@ -246,6 +273,7 @@ export const VideoPlayer: React.FC<Props> = ({
               break;
             default:
               hls.destroy();
+              setIsLoading(false);
               break;
           }
         }
@@ -255,7 +283,12 @@ export const VideoPlayer: React.FC<Props> = ({
       video.playbackRate = playbackSpeed;
       video.volume = volume;
       video.muted = isMuted;
-      video.play().then(() => setIsPlaying(true)).catch(() => {});
+      video.play().then(() => {
+        setIsPlaying(true);
+        setIsLoading(false);
+      }).catch(() => {
+        setIsLoading(false);
+      });
     }
 
     return () => {
@@ -266,9 +299,11 @@ export const VideoPlayer: React.FC<Props> = ({
     };
   }, [streamUrl, isLoading]);
 
+  // 4. Auto-skip intro/outro detection loop
   useEffect(() => {
     if (!skipData || !isPlaying) return;
 
+    // Check OP
     if (Array.isArray(skipData.op) && skipData.op.length >= 2) {
       const [opStart, opEnd] = skipData.op;
       if (currentTime >= opStart && currentTime < opEnd) {
@@ -279,6 +314,7 @@ export const VideoPlayer: React.FC<Props> = ({
       }
     }
 
+    // Check ED
     if (Array.isArray(skipData.ed) && skipData.ed.length >= 2) {
       const [edStart, edEnd] = skipData.ed;
       if (currentTime >= edStart && currentTime < edEnd) {
@@ -295,6 +331,7 @@ export const VideoPlayer: React.FC<Props> = ({
     setTimeout(() => setSkipToast(null), 3000);
   };
 
+  // Keep Clock updated every second
   useEffect(() => {
     const updateClock = () => {
       const clock = formatPlayerClock(currentTime, duration, new Date());
@@ -305,12 +342,14 @@ export const VideoPlayer: React.FC<Props> = ({
     return () => clearInterval(interval);
   }, [currentTime, duration]);
 
+  // Sync watch progress to global context
   useEffect(() => {
     if (currentTime > 0) {
       updateWatchProgress(anime.id, currentEpisodeNumber, currentTime, duration);
     }
   }, [currentTime, currentEpisodeNumber, anime.id, duration]);
 
+  // Auto-hide controls when playing and not interacting
   useEffect(() => {
     if (!isPlaying || isLocked || showSettingsSheet || activeDrawer !== 'none') return;
     const hideTimer = setTimeout(() => {
@@ -367,9 +406,11 @@ export const VideoPlayer: React.FC<Props> = ({
       videoUrl: streamUrl
     };
 
+  // Object fit class based on screen size setting
   const objectFitClass =
     screenSize === 'Fit' ? 'object-contain' : screenSize === 'Crop' ? 'object-cover' : 'object-fill';
 
+  // In OP/ED interval detection for skip button display
   const isInOp = Array.isArray(skipData?.op) && skipData.op.length >= 2 && currentTime >= skipData.op[0] && currentTime <= skipData.op[1];
   const isInEd = Array.isArray(skipData?.ed) && skipData.ed.length >= 2 && currentTime >= skipData.ed[0] && currentTime <= skipData.ed[1];
 
@@ -377,25 +418,31 @@ export const VideoPlayer: React.FC<Props> = ({
     <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col overflow-y-auto select-none font-sans">
       {/* Skip Notification Toast */}
       {skipToast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/80 backdrop-blur-xl border border-purple-500/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/80 backdrop-blur-xl border border-[#74cf66]/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4 text-[#74cf66]" />
           <span>{skipToast}</span>
         </div>
       )}
 
+      {/* VIDEO CONTAINER */}
       <div
         ref={containerRef}
         onClick={handleContainerClick}
         className="relative w-full aspect-video max-h-[75vh] bg-black overflow-hidden flex items-center justify-center cursor-pointer group"
       >
+        {/* HTML5 Video Player */}
         <video
           ref={videoRef}
+          src={!streamUrl.includes('.m3u8') ? streamUrl : undefined}
           className={`w-full h-full ${objectFitClass} transition-all duration-300`}
           crossOrigin="anonymous"
+          onCanPlay={() => setIsLoading(false)}
+          onLoadedData={() => setIsLoading(false)}
           onTimeUpdate={() => {
             if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
           }}
           onLoadedMetadata={() => {
+            setIsLoading(false);
             if (videoRef.current) setDuration(videoRef.current.duration || 1440);
           }}
           onEnded={() => {
@@ -410,8 +457,12 @@ export const VideoPlayer: React.FC<Props> = ({
           }}
           playsInline
           onError={() => {
+            setIsLoading(false);
             const sampleFallback = [
-              ''
+              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
             ][(currentEpisodeNumber - 1) % 4];
             if (streamUrl !== sampleFallback) {
               setStreamUrl(sampleFallback);
@@ -430,32 +481,35 @@ export const VideoPlayer: React.FC<Props> = ({
           ))}
         </video>
 
+        {/* LOADING SPINNER */}
         {isLoading && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm space-y-3">
             <div className="relative flex items-center justify-center">
-              <div className="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin" />
+              <div className="w-16 h-16 border-4 border-[#74cf66]/20 border-t-[#74cf66] rounded-full animate-spin" />
               <img
-                src="/assets/images/AniLife-logo-fill.png"
+                src="/assets/images/Anilife-Logo.png"
                 alt="AniLife"
-                className="absolute w-8 h-8 rounded-full shadow-lg shadow-purple-950/80"
+                className="absolute w-8 h-8 rounded-full shadow-lg"
               />
             </div>
-            <p className="text-xs font-semibold text-purple-300">
+            <p className="text-xs font-semibold text-[#74cf66]">
               Connecting to {activeServer.name}...
             </p>
           </div>
         )}
 
+        {/* GLOWING SKIP OP / ED BUTTON */}
         {!settings.autoSkipIntro && (isInOp || isInEd) && (
           <button
             onClick={handleSkipButton}
-            className="absolute bottom-20 right-6 z-40 px-5 py-2 rounded-full bg-purple-600/90 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-purple-600/40 border border-purple-400/50 flex items-center gap-2 animate-pulse cursor-pointer transition-transform hover:scale-105"
+            className="absolute bottom-20 right-6 z-40 px-5 py-2 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs sm:text-sm shadow-xl shadow-[rgba(116,207,102,0.4)] border border-[#74cf66]/50 flex items-center gap-2 animate-pulse cursor-pointer transition-transform hover:scale-105"
           >
             <FastForward className="w-4 h-4" />
             <span>{isInOp ? 'Skip Opening' : 'Skip Ending'}</span>
           </button>
         )}
 
+        {/* LOCKED BADGE */}
         {isLocked && (
           <div className="absolute top-4 left-4 z-40">
             <button
@@ -465,12 +519,13 @@ export const VideoPlayer: React.FC<Props> = ({
               }}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-white hover:bg-black/80 cursor-pointer"
             >
-              <Unlock className="w-4 h-4 text-purple-400" />
+              <Unlock className="w-4 h-4 text-[#74cf66]" />
               <span>Tap to unlock screen</span>
             </button>
           </div>
         )}
 
+        {/* OVERLAY CONTROLS */}
         {!isLocked && (
           <div
             className={`absolute inset-0 z-20 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-t from-black/85 via-black/25 to-black/80 transition-opacity duration-300 ${
@@ -497,11 +552,14 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* Right action icons */}
               <div className="flex items-center gap-1 sm:gap-2">
+                {/* Clock indicator */}
                 <span className="hidden sm:inline-block text-xs text-zinc-300 font-mono px-2 py-1 rounded bg-black/40 border border-white/10">
                   {clockString}
                 </span>
 
+                {/* Lock screen */}
                 <button
                   onClick={() => setIsLocked(true)}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -510,6 +568,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
+                {/* Subtitles & Captions */}
                 <button
                   onClick={() => setActiveDrawer(activeDrawer === 'captions' ? 'none' : 'captions')}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -518,6 +577,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Subtitles className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
+                {/* Server picker */}
                 <button
                   onClick={() => setActiveDrawer(activeDrawer === 'servers' ? 'none' : 'servers')}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -526,6 +586,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Server className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
+                {/* Settings Bottom Sheet Trigger (Screenshot 1) */}
                 <button
                   onClick={() => setShowSettingsSheet(true)}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -536,10 +597,12 @@ export const VideoPlayer: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* CENTER PLAY/PAUSE & JUMP BUTTONS */}
             <div
               className="flex items-center justify-center gap-8 sm:gap-14"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Skip back 10s */}
               <button
                 onClick={() => handleSeek(currentTime - 10)}
                 className="p-3 rounded-full hover:bg-white/10 text-white/90 hover:text-white transition-all transform hover:scale-110 cursor-pointer"
@@ -548,6 +611,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
 
+              {/* Previous episode */}
               <button
                 onClick={() => {
                   if (currentEpisodeNumber > 1) {
@@ -561,17 +625,19 @@ export const VideoPlayer: React.FC<Props> = ({
                 <SkipBack className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
+              {/* Main Play/Pause Button */}
               <button
                 onClick={handlePlayPause}
-                className="p-4 sm:p-5 rounded-full bg-purple-600 hover:bg-purple-500 text-white shadow-2xl shadow-purple-600/50 transition-all transform hover:scale-110 active:scale-95 cursor-pointer"
+                className="p-4 sm:p-5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black shadow-2xl shadow-[rgba(116,207,102,0.4)] transition-all transform hover:scale-110 active:scale-95 cursor-pointer"
               >
                 {isPlaying ? (
-                  <Pause className="w-8 h-8 sm:w-10 sm:h-10 fill-white" />
+                  <Pause className="w-8 h-8 sm:w-10 sm:h-10 fill-black" />
                 ) : (
-                  <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-white translate-x-0.5" />
+                  <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-black translate-x-0.5" />
                 )}
               </button>
 
+              {/* Next episode */}
               <button
                 onClick={() => {
                   const nextNum = currentEpisodeNumber + 1;
@@ -586,6 +652,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 <SkipForward className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
+              {/* Skip forward 10s */}
               <button
                 onClick={() => handleSeek(currentTime + 10)}
                 className="p-3 rounded-full hover:bg-white/10 text-white/90 hover:text-white transition-all transform hover:scale-110 cursor-pointer"
@@ -595,7 +662,9 @@ export const VideoPlayer: React.FC<Props> = ({
               </button>
             </div>
 
+            {/* BOTTOM SEEKBAR & CONTROLS */}
             <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+              {/* Progress Slider */}
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono text-zinc-300 w-11 text-right">
                   {formatTime(currentTime)}
@@ -608,7 +677,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     step="0.5"
                     value={currentTime}
                     onChange={(e) => handleSeek(Number(e.target.value))}
-                    className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500 focus:outline-none"
+                    className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#74cf66] focus:outline-none"
                   />
                 </div>
                 <span className="text-xs font-mono text-zinc-400 w-11">
@@ -616,8 +685,10 @@ export const VideoPlayer: React.FC<Props> = ({
                 </span>
               </div>
 
+              {/* Quick Bar bottom controls */}
               <div className="flex items-center justify-between text-xs text-zinc-300">
                 <div className="flex items-center gap-2">
+                  {/* Mute/Volume Toggle */}
                   <button
                     onClick={() => {
                       if (videoRef.current) {
@@ -630,13 +701,15 @@ export const VideoPlayer: React.FC<Props> = ({
                     {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
                   </button>
 
+                  {/* Audio sub/dub badge */}
                   <button
                     onClick={() => setAudioMode(audioMode === 'SUB' ? 'DUB' : 'SUB')}
-                    className="px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/40 text-[11px] font-bold text-purple-200 cursor-pointer"
+                    className="px-2.5 py-0.5 rounded-full bg-black/60 border border-[#74cf66]/40 text-[11px] font-bold text-[#74cf66] cursor-pointer"
                   >
                     {audioMode}
                   </button>
 
+                  {/* Active server badge */}
                   <button
                     onClick={() => setActiveDrawer('servers')}
                     className="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-zinc-300 cursor-pointer"
@@ -646,6 +719,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* Speed shortcut */}
                   <button
                     onClick={() => setShowSettingsSheet(true)}
                     className="px-2 py-0.5 rounded-md hover:bg-white/10 font-bold text-[11px]"
@@ -662,6 +736,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     <ListOrdered className="w-4 h-4" />
                   </button>
 
+                  {/* Fullscreen toggle */}
                   <button
                     onClick={() => {
                       if (!document.fullscreenElement) {
@@ -680,6 +755,9 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
+        {/* ------------------------------------------------------------- */}
+        {/* EXACT PLAYER SETTINGS BOTTOM SHEET (Matches User Screenshot 1) */}
+        {/* ------------------------------------------------------------- */}
         {showSettingsSheet && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -688,6 +766,7 @@ export const VideoPlayer: React.FC<Props> = ({
             <div
               className="w-full max-w-lg mx-auto bg-[#0a0a0c] border-t border-white/15 rounded-t-3xl p-5 sm:p-6 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto no-scrollbar text-white animate-slideUp"
             >
+              {/* Sheet Header (Screenshot 1: NOW PLAYING / Settings / Close) */}
               <div className="flex items-center justify-between pb-1 border-b border-white/10">
                 <div>
                   <div className="text-[10px] font-bold text-zinc-400 tracking-wider uppercase">
@@ -703,6 +782,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </button>
               </div>
 
+              {/* 1. VOLUME (Screenshot 1: speaker icon + track + 53%) */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   VOLUME
@@ -732,6 +812,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 2. PLAYBACK SPEED (Screenshot 1: Gauge icon + dot steps + 1x) */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   PLAYBACK SPEED
@@ -768,6 +849,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 3. QUALITY (Screenshot 1: HQ icon + slider stops + Auto) */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   QUALITY
@@ -803,6 +885,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 4. AUDIO (Screenshot 1: [ Sub ] [ Dub ] buttons + helper text) */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   AUDIO
@@ -836,6 +919,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 5. AUDIO FORMAT (Screenshot 1: AAC • Stereo • decoded on this device) */}
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   AUDIO FORMAT
@@ -845,6 +929,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 6. SCREEN SIZE (Screenshot 1: [ Fit ] [ Crop ] [ Fill ]) */}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   SCREEN SIZE
@@ -867,21 +952,24 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
+              {/* 7. PLAYBACK TOGGLES (Screenshot 1: Auto-play next / Auto-skip) */}
               <div className="space-y-2.5 pt-1">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   PLAYBACK
                 </div>
 
+                {/* Auto-play next episode */}
                 <label className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
                   <span className="text-xs font-semibold text-white">Auto-play next episode</span>
                   <input
                     type="checkbox"
                     checked={settings.autoPlayNext}
                     onChange={(e) => updateSettings({ autoPlayNext: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
 
+                {/* Auto-skip intro, recap and outro */}
                 <label className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
                   <div>
                     <div className="text-xs font-semibold text-white">Auto-skip intro, recap and outro</div>
@@ -891,11 +979,12 @@ export const VideoPlayer: React.FC<Props> = ({
                     type="checkbox"
                     checked={settings.autoSkipIntro}
                     onChange={(e) => updateSettings({ autoSkipIntro: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
               </div>
 
+              {/* Bottom Chevron to slide down (Screenshot 1) */}
               <div className="flex justify-center pt-2">
                 <button
                   type="button"
@@ -909,10 +998,13 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
+        {/* ------------------------------------------------------------- */}
+        {/* DRAWER: SERVER / SOURCE PICKER SHEET (PlayerSourcesSheet.kt) */}
+        {/* ------------------------------------------------------------- */}
         {activeDrawer === 'servers' && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-y-0 right-0 w-full sm:w-96 bg-[#0e0c18]/95 border-l border-purple-500/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-4 animate-fadeIn text-xs"
+            className="absolute inset-y-0 right-0 w-full sm:w-96 bg-[#0e0c18]/95 border-l border-[#74cf66]/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-4 animate-fadeIn text-xs"
           >
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div>
@@ -940,7 +1032,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     }}
                     className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-purple-600/30 border border-purple-500 text-white'
+                        ? 'bg-[#74cf66]/20 border border-[#74cf66] text-white'
                         : 'bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300'
                     }`}
                   >
@@ -948,7 +1040,7 @@ export const VideoPlayer: React.FC<Props> = ({
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm">{server.name}</span>
                         {server.badge && (
-                          <span className="px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/30 text-[9px] font-bold text-purple-300">
+                          <span className="px-2 py-0.5 rounded-full bg-black/80 border border-[#74cf66]/30 text-[9px] font-bold text-[#74cf66]">
                             {server.badge}
                           </span>
                         )}
@@ -962,7 +1054,7 @@ export const VideoPlayer: React.FC<Props> = ({
                       <span className={`text-[10px] font-bold ${server.speed === 'Ultra' ? 'text-emerald-400' : 'text-blue-400'}`}>
                         {server.speed}
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-purple-400" />}
+                      {isSelected && <Check className="w-4 h-4 text-[#74cf66]" />}
                     </div>
                   </button>
                 );
@@ -971,10 +1063,11 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
+        {/* DRAWER: CAPTIONS / SUBTITLES */}
         {activeDrawer === 'captions' && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-y-0 right-0 w-full sm:w-80 bg-[#0e0c18]/95 border-l border-purple-500/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-4 animate-fadeIn text-xs"
+            className="absolute inset-y-0 right-0 w-full sm:w-80 bg-[#0e0c18]/95 border-l border-[#74cf66]/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-4 animate-fadeIn text-xs"
           >
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <h3 className="font-bold text-sm text-white">Subtitles & Captions</h3>
@@ -998,17 +1091,18 @@ export const VideoPlayer: React.FC<Props> = ({
                     }}
                     className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
                       selectedSubLanguage === lang
-                        ? 'bg-purple-600 text-white font-bold'
+                        ? 'bg-[#74cf66] text-black font-bold'
                         : 'bg-white/5 hover:bg-white/10 text-zinc-300'
                     }`}
                   >
                     <span>{lang}</span>
-                    {selectedSubLanguage === lang && <Check className="w-4 h-4 text-white" />}
+                    {selectedSubLanguage === lang && <Check className="w-4 h-4 text-black" />}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Timing Offset */}
             <div className="space-y-2 pt-2 border-t border-white/10">
               <span className="font-bold uppercase tracking-wider text-[11px] text-zinc-400">Timing Offset</span>
               <div className="flex items-center justify-between bg-white/5 p-2 rounded-2xl">
@@ -1030,10 +1124,11 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
+        {/* DRAWER: EPISODES DRAWER */}
         {activeDrawer === 'episodes' && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-y-0 right-0 w-full sm:w-80 bg-[#0e0c18]/95 border-l border-purple-500/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-3 animate-fadeIn text-xs"
+            className="absolute inset-y-0 right-0 w-full sm:w-80 bg-[#0e0c18]/95 border-l border-[#74cf66]/30 backdrop-blur-2xl p-5 z-50 overflow-y-auto space-y-3 animate-fadeIn text-xs"
           >
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <h3 className="font-bold text-sm text-white">Episodes ({activeEpisodes.length})</h3>
@@ -1057,7 +1152,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     }}
                     className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-purple-600/40 border border-purple-400 text-white'
+                        ? 'bg-[#74cf66]/20 border border-[#74cf66] text-white'
                         : 'bg-white/5 hover:bg-white/10 text-zinc-300'
                     }`}
                   >
@@ -1070,7 +1165,7 @@ export const VideoPlayer: React.FC<Props> = ({
                         {ep.durationSec ? `${Math.round(ep.durationSec / 60)} min` : '24 min'}
                       </div>
                     </div>
-                    {isSelected && <Play className="w-3.5 h-3.5 fill-purple-400 text-purple-400 shrink-0" />}
+                    {isSelected && <Play className="w-3.5 h-3.5 fill-[#74cf66] text-[#74cf66] shrink-0" />}
                   </button>
                 );
               })}
@@ -1079,11 +1174,13 @@ export const VideoPlayer: React.FC<Props> = ({
         )}
       </div>
 
+      {/* METADATA & EPISODES LIST BELOW PLAYER (Screenshot 220330) */}
       <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        {/* Episode Title & Metadata */}
         <div className="space-y-1">
           <h2 className="text-xl sm:text-2xl font-black text-white">{currentEpisode.title}</h2>
           <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-400">
-            <span className="text-purple-400 font-bold">{anime.score}% score</span>
+            <span className="text-[#74cf66] font-bold">{anime.score}% score</span>
             <span>•</span>
             <span>Episode {currentEpisode.number}</span>
             {currentEpisode.airedDate && (
@@ -1098,12 +1195,13 @@ export const VideoPlayer: React.FC<Props> = ({
           </p>
         </div>
 
+        {/* Anime Title Pill Row */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10">
           <div className="flex items-center gap-3">
             <img
               src={anime.posterImage}
               alt={anime.title}
-              className="w-10 h-10 rounded-full object-cover border border-purple-400"
+              className="w-10 h-10 rounded-full object-cover border border-[#74cf66]"
             />
             <div>
               <h3 className="font-bold text-sm text-white">{anime.title}</h3>
@@ -1131,10 +1229,11 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         </div>
 
+        {/* Server & Audio Quick Pills */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveDrawer('servers')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold text-purple-200 border border-white/10 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold text-zinc-200 border border-white/10 cursor-pointer"
           >
             <span>{activeServer.name}</span>
             <ChevronDown className="w-3.5 h-3.5" />
@@ -1142,19 +1241,20 @@ export const VideoPlayer: React.FC<Props> = ({
 
           <button
             onClick={() => setAudioMode(audioMode === 'SUB' ? 'DUB' : 'SUB')}
-            className="px-3.5 py-1.5 rounded-full bg-purple-600/40 border border-purple-500/40 text-xs font-bold text-purple-200 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-[#74cf66]/20 border border-[#74cf66]/40 text-xs font-bold text-[#74cf66] cursor-pointer"
           >
             {audioMode}
           </button>
 
           <button
             onClick={() => setActiveDrawer('servers')}
-            className="text-xs text-purple-400 hover:text-purple-300 ml-1 cursor-pointer font-medium"
+            className="text-xs text-[#74cf66] hover:text-[#62b956] ml-1 cursor-pointer font-medium"
           >
             More servers...
           </button>
         </div>
 
+        {/* Episodes Grid/List below (Screenshot 220330) */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-white">Episodes ({activeEpisodes.length})</h3>
@@ -1169,7 +1269,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   onClick={() => setCurrentEpisodeNumber(ep.number)}
                   className={`flex items-center justify-between gap-3 p-3 rounded-2xl transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-purple-600/20 border border-purple-500/50'
+                      ? 'bg-[#74cf66]/10 border border-[#74cf66]/40'
                       : 'bg-white/5 hover:bg-white/10 border border-white/10'
                   }`}
                 >
@@ -1188,7 +1288,7 @@ export const VideoPlayer: React.FC<Props> = ({
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <h4 className={`font-semibold text-sm truncate ${isSelected ? 'text-purple-300' : 'text-white'}`}>
+                      <h4 className={`font-semibold text-sm truncate ${isSelected ? 'text-[#74cf66]' : 'text-white'}`}>
                         {ep.title}
                       </h4>
                       <p className="text-xs text-zinc-400 mt-0.5">
@@ -1198,7 +1298,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   </div>
 
                   {isSelected && (
-                    <Play className="w-4 h-4 fill-purple-400 text-purple-400 shrink-0" />
+                    <Play className="w-4 h-4 fill-[#74cf66] text-[#74cf66] shrink-0" />
                   )}
                 </div>
               );

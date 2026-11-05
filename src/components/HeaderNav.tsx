@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Home,
@@ -8,7 +8,9 @@ import {
   Download,
   Dices,
   Bell,
-  Settings
+  Settings,
+  Tv,
+  MessageSquare
 } from 'lucide-react';
 
 export const HeaderNav: React.FC = () => {
@@ -21,40 +23,96 @@ export const HeaderNav: React.FC = () => {
     setShowSettingsModal,
     setShowRandomModal,
     setShowNotificationsModal,
-    setShowAuthModal
+    setShowAuthModal,
+    settings,
   } = useApp();
+
+  const [isMouseNearEdge, setIsMouseNearEdge] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Auto-hide edge detection if enabled
+  useEffect(() => {
+    if (!settings.autoHideNav) {
+      setIsMouseNearEdge(true);
+      return;
+    }
+
+    let hideTimer: any = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (settings.navigationLayout === 'sidebar') {
+        if (e.clientX < 80) {
+          setIsMouseNearEdge(true);
+          clearTimeout(hideTimer);
+        } else {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            setIsMouseNearEdge(false);
+          }, 1200);
+        }
+      } else {
+        if (e.clientY < 70) {
+          setIsMouseNearEdge(true);
+          clearTimeout(hideTimer);
+        } else {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            setIsMouseNearEdge(false);
+          }, 1200);
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(hideTimer);
+    };
+  }, [settings.autoHideNav, settings.navigationLayout]);
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'search', label: 'Search', icon: Search },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
-    { id: 'mylist', label: 'My List', icon: Bookmark },
+    { id: 'mylist', label: 'Library', icon: Bookmark },
     { id: 'downloads', label: 'Downloads', icon: Download },
   ] as const;
 
-  return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-black/40 border-b border-purple-900/20 px-3 sm:px-6 py-2.5 transition-colors">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        {/* Left Branding & Tabs */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
-          {/* Brand Logo & Title */}
+  // 1. SIDEBAR MODE (Desktop Screenshot layout)
+  if (settings.navigationLayout === 'sidebar') {
+    return (
+      <aside
+        onMouseEnter={() => {
+          setIsMouseNearEdge(true);
+          setIsExpanded(true);
+        }}
+        onMouseLeave={() => setIsExpanded(false)}
+        className={`fixed left-0 top-0 bottom-0 z-40 bg-[#0e0e12] border-r border-zinc-800/80 flex flex-col justify-between py-4 px-2.5 transition-all duration-300 select-none ${
+          settings.autoHideNav && !isMouseNearEdge ? '-translate-x-full' : 'translate-x-0'
+        } ${isExpanded ? 'w-52 shadow-2xl' : 'w-16'}`}
+      >
+        {/* Top: Logo & Main Navigation */}
+        <div className="space-y-6">
+          {/* Logo */}
           <button
             onClick={() => setActiveTab('home')}
-            className="flex items-center gap-2 mr-2 sm:mr-3 select-none cursor-pointer group shrink-0 focus:outline-none"
-            title="AniLife Home"
-            aria-label="AniLife Home"
+            className="flex items-center gap-3 px-1 py-1 rounded-xl w-full hover:bg-white/5 transition-colors cursor-pointer group"
+            title="AniLife"
           >
             <img
-              src="/assets/images/AniLife-logo-fill.png"
-              alt="AniLife Logo"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-md shadow-purple-950/60 group-hover:scale-105 transition-transform object-cover ring-1 ring-white/10"
+              src="/assets/images/Anilife-Logo.png"
+              alt="AniLife"
+              className="w-10 h-10 rounded-full shrink-0 group-hover:scale-105 transition-transform"
             />
-            <span className="hidden sm:inline-block text-lg sm:text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-300">
-              ANILIFE
-            </span>
+            {isExpanded && (
+              <span className="font-black text-lg text-white tracking-wide truncate">
+                AniLife
+              </span>
+            )}
           </button>
 
-          <nav className="flex items-center gap-1 sm:gap-1.5" aria-label="Main Navigation">
+          {/* Navigation Items */}
+          <nav className="space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -62,13 +120,121 @@ export const HeaderNav: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  title={item.label}
+                  className={`flex items-center gap-3.5 w-full p-2.5 rounded-xl transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-purple-600/80 text-white shadow-lg shadow-purple-600/25 ring-1 ring-purple-400/40'
-                      : 'text-zinc-300 hover:text-white hover:bg-white/10'
+                      ? 'bg-[#74cf66] text-black font-bold shadow-[0_0_12px_rgba(116,207,102,0.3)]'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Icon className="w-5 h-5 shrink-0" />
+                  {isExpanded && (
+                    <span className="text-xs font-semibold tracking-wide truncate">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom Actions: Random, Notifications, Settings, Profile */}
+        <div className="space-y-2 pt-4 border-t border-zinc-800/80">
+          <button
+            onClick={() => setShowRandomModal(true)}
+            className="flex items-center gap-3.5 w-full p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            title="Random Anime Pick"
+          >
+            <Dices className="w-5 h-5 shrink-0 text-[#74cf66]" />
+            {isExpanded && <span className="text-xs font-semibold truncate">Random</span>}
+          </button>
+
+          <button
+            onClick={() => setShowNotificationsModal(true)}
+            className="flex items-center gap-3.5 w-full p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors relative cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-5 h-5 shrink-0" />
+            {isExpanded && <span className="text-xs font-semibold truncate">Notifications</span>}
+          </button>
+
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="flex items-center gap-3.5 w-full p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            title="Settings"
+          >
+            <Settings className="w-5 h-5 shrink-0" />
+            {isExpanded && <span className="text-xs font-semibold truncate">Settings</span>}
+          </button>
+
+          {/* Profile Avatar */}
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className="flex items-center gap-3 w-full p-1.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
+            title={`Profile: ${activeProfile.name}`}
+          >
+            <img
+              src={activeProfile.avatar}
+              alt={activeProfile.name}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-[#74cf66] shrink-0"
+            />
+            {isExpanded && (
+              <div className="text-left min-w-0">
+                <div className="text-xs font-bold text-white truncate">
+                  {activeProfile.name}
+                </div>
+                <div className="text-[10px] text-zinc-500 truncate">
+                  {currentUser ? currentUser.name : 'Switch profile'}
+                </div>
+              </div>
+            )}
+          </button>
+        </div>
+      </aside>
+    );
+  }
+
+  // 2. TOPBAR MODE (Classic horizontal navbar)
+  return (
+    <header
+      className={`sticky top-0 z-40 w-full backdrop-blur-xl bg-black/70 border-b border-zinc-800/80 px-3 sm:px-6 py-2.5 transition-all duration-300 ${
+        settings.autoHideNav && !isMouseNearEdge ? '-translate-y-full' : 'translate-y-0'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+        {/* Left Branding & Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <button
+            onClick={() => setActiveTab('home')}
+            className="flex items-center gap-2.5 mr-3 select-none cursor-pointer group shrink-0"
+            title="AniLife Home"
+          >
+            <img
+              src="/assets/images/Anilife-Logo.png"
+              alt="AniLife"
+              className="w-8 h-8 rounded-full group-hover:scale-105 transition-transform object-cover"
+            />
+            <span className="hidden sm:inline-block text-lg font-black tracking-wider text-white">
+              AniLife
+            </span>
+          </button>
+
+          <nav className="flex items-center gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#74cf66] text-black shadow-[0_0_12px_rgba(116,207,102,0.3)]'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
                 </button>
               );
@@ -77,81 +243,42 @@ export const HeaderNav: React.FC = () => {
         </div>
 
         {/* Right Action Icons */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* Random Pick (Dice) */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setShowRandomModal(true)}
             title="Random anime pick"
-            aria-label="Random anime pick"
-            className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
           >
-            <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
+            <Dices className="w-4 h-4 text-[#74cf66]" />
           </button>
 
-          {/* Notifications */}
           <button
             onClick={() => setShowNotificationsModal(true)}
             title="Notifications"
-            aria-label="Notifications"
-            className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors relative cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
           >
-            <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+            <Bell className="w-4 h-4" />
           </button>
 
-          {/* Settings */}
           <button
             onClick={() => setShowSettingsModal(true)}
             title="Settings"
-            aria-label="Settings"
-            className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
           >
-            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Settings className="w-4 h-4" />
           </button>
 
-          {/* AniList Sync & Account Button */}
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
-              currentUser
-                ? 'bg-purple-900/40 hover:bg-purple-900/60 text-purple-200 border-purple-500/40 shadow-sm'
-                : 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/10'
-            }`}
-            title="AniList Account & Sync"
-          >
-            {currentUser ? (
-              <>
-                <img
-                  src={currentUser.avatar.medium}
-                  alt={currentUser.name}
-                  className="w-4 h-4 rounded-full object-cover"
-                />
-                <span className="truncate max-w-[90px]">{currentUser.name}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              </>
-            ) : (
-              <>
-                <span className="w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black text-white flex items-center justify-center">
-                  A
-                </span>
-                <span>Sign in</span>
-              </>
-            )}
-          </button>
-
-          {/* Profile Badge */}
+          {/* User Profile */}
           <button
             onClick={() => setShowProfileModal(true)}
-            title={`Switch Profile (${activeProfile.name})`}
-            aria-label="Profile"
-            className="ml-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden ring-2 ring-purple-400/50 hover:ring-purple-300 transition-all cursor-pointer shadow-md flex items-center justify-center shrink-0"
-            style={{ backgroundColor: activeProfile.accentColor || '#F59E0B' }}
+            title={`Profile: ${activeProfile.name}`}
+            className="p-1 rounded-full hover:ring-2 hover:ring-[#74cf66] transition-all cursor-pointer ml-1"
           >
-            {activeProfile.avatar ? (
-              <img src={activeProfile.avatar} alt={activeProfile.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-white font-bold text-xs sm:text-sm">{activeProfile.name.charAt(0).toUpperCase()}</span>
-            )}
+            <img
+              src={activeProfile.avatar}
+              alt={activeProfile.name}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+            />
           </button>
         </div>
       </div>

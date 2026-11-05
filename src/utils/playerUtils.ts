@@ -1,3 +1,7 @@
+/**
+ * Anilife Player Utility Functions
+ */
+
 export function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '00:00';
   const totalSec = Math.floor(seconds);

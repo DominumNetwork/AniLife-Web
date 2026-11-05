@@ -41,6 +41,7 @@ export const BrowseSearch: React.FC = () => {
     'Supernatural'
   ];
 
+  // Debounced live AniList search query
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
@@ -88,8 +89,10 @@ export const BrowseSearch: React.FC = () => {
     setLiveSearchResults([]);
   };
 
+  // Combine live AniList results with local live catalog
   const filteredAnime = useMemo(() => {
     if (query.trim().length >= 2 && liveSearchResults.length > 0) {
+      // Prioritize live results from AniList API
       return liveSearchResults;
     }
 
@@ -115,6 +118,7 @@ export const BrowseSearch: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
+      {/* Header */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Browse</h1>
         <p className="text-sm text-zinc-400 mt-1">Search millions of anime powered by AniList</p>
@@ -160,6 +164,7 @@ export const BrowseSearch: React.FC = () => {
         </button>
       </div>
 
+      {/* Recent searches */}
       {recentSearches.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-zinc-400 font-semibold uppercase tracking-wider">
@@ -196,6 +201,7 @@ export const BrowseSearch: React.FC = () => {
         </div>
       )}
 
+      {/* Categories Horizontal Pills */}
       <div className="space-y-2">
         <div className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">
           Categories
@@ -220,6 +226,7 @@ export const BrowseSearch: React.FC = () => {
         </div>
       </div>
 
+      {/* Results Anime Grid */}
       <div className="pt-2">
         <div className="flex items-center justify-between text-xs text-zinc-400 mb-3">
           <span>

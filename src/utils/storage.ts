@@ -32,11 +32,12 @@ export const POPULAR_AVATARS = [
   { name: 'Beatrice', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b90181-wRPm0OEaucmw.png' },
   { name: 'Puc', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b90187-xJXlD84KXl3t.jpg' },
   { name: 'Veldora Tempest', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b128034-Gg5MrpTFNSv8.png' },
-  { name: 'Kazuma', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b89364-7Th8Tv1XKJtt.png' }
+  { name: 'Kazuma', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b89364-7Th8Tv1XKJtt.png' },
+  { name: 'AniLife Silhouette', url: '/assets/images/avatar_green_silhouette.webp' }
 ];
 
 export const THEME_PRESETS: Record<ThemePresetName, { canvas: 'amoled' | 'dark'; accent: string; label: string }> = {
-  'Midnight': { canvas: 'amoled', accent: '#8B5CF6', label: 'Midnight (AMOLED + Purple)' },
+  'Midnight': { canvas: 'amoled', accent: '#74cf66', label: 'AniLife Emerald (#74cf66)' },
   'Crimson Night': { canvas: 'amoled', accent: '#D1102B', label: 'Crimson Night (Blood Red)' },
   'Toxic': { canvas: 'amoled', accent: '#39FF14', label: 'Toxic (Neon Green)' },
   'Royal': { canvas: 'amoled', accent: '#9333EA', label: 'Royal (Deep Purple)' },
@@ -51,26 +52,11 @@ export const THEME_PRESETS: Record<ThemePresetName, { canvas: 'amoled' | 'dark';
 
 export const DEFAULT_PROFILES: UserProfile[] = [
   {
-    id: 'profile-dominum',
-    name: 'Dominum',
-    avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b127997-vWnCSn7qfHw4.png',
-    accentColor: '#8B5CF6',
-    pin: '1234',
-    createdAt: Date.now() - 86400000,
-  },
-  {
-    id: 'profile-guest',
-    name: 'Guest',
-    avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b183492-Y6fBffGg5V6g.png',
-    accentColor: '#06B6D4',
-    createdAt: Date.now() - 43200000,
-  },
-  {
-    id: 'profile-maomao',
-    name: 'Anime Fan',
-    avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b139982-hP7d9J2k0G5l.png',
-    accentColor: '#10B981',
-    createdAt: Date.now() - 20000000,
+    id: 'profile-main',
+    name: 'Profile 1',
+    avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b127691-9zqh1xpIubn7.png',
+    accentColor: '#74cf66',
+    createdAt: Date.now(),
   }
 ];
 
@@ -78,9 +64,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   // Theme & Appearance
   themePreset: 'Midnight',
   canvasBackground: 'amoled',
-  accentColor: '#8B5CF6',
+  accentColor: '#74cf66',
   backdropSource: 'none',
-  backdropImage: 'https://image.tmdb.org/t/p/w1280/tka5fcGkFclwf3brgUZunXHIwAg.jpg',
+  backdropImage: '',
   backdropDim: 'Medium',
   backdropBlur: true,
   glassPopups: true,
@@ -108,47 +94,49 @@ export const DEFAULT_SETTINGS: AppSettings = {
   subtitleOffsetSec: 0,
 
   // Servers & Sources
-  activeServer: 'xfdm',
+  activeServer: 'zoko',
   serverPriority: [
-    'xfdm',
-    'anichan',
     'zoko',
-    'animepahe',
+    'bee',
+    'anichan',
     'anikoto',
-    'animeheaven',
-    'animeav1',
-    'kaa',
+    'animepahe',
+    'lili',
+    'sun',
     'allanime',
-    'rareanimes',
-    'kartoons',
-    'onepace'
+    'kickassanime',
+    'animeheaven'
   ],
   enabledServers: [
-    'xfdm',
-    'anichan',
     'zoko',
-    'animepahe',
+    'bee',
+    'anichan',
     'anikoto',
-    'animeheaven',
-    'animeav1',
-    'kaa',
+    'animepahe',
+    'lili',
+    'sun',
     'allanime',
-    'rareanimes',
-    'kartoons',
-    'onepace'
+    'kickassanime',
+    'animeheaven'
   ],
 
   // Content
   hideAdultContent: false,
-  titleLanguage: 'english',
+  titleLanguage: 'romaji',
   blurSpoilers: false,
   onlyWatchableEpisodes: false,
 
   // Accounts & Sync
-  anilistConnected: true,
-  anilistUsername: 'Dominum',
+  anilistConnected: false,
+  anilistUsername: '',
+  discordConnected: false,
   discordPresence: true,
+  discordRichPresence: true,
   dnsOverHttps: true,
+
+  // Navigation & Layout
+  navigationLayout: 'sidebar',
+  autoHideNav: false,
 };
 
 const STORAGE_KEYS = {
@@ -244,10 +232,10 @@ export function saveWatchlist(profileId: string, entries: WatchlistEntry[]): voi
 export function loadContinueWatching(profileId: string = 'default'): ContinueWatchingEntry[] {
   try {
     const raw = localStorage.getItem(`${STORAGE_KEYS.CONTINUE_PREFIX}${profileId}`);
-    if (!raw) return INITIAL_CONTINUE_WATCHING;
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch {
-    return INITIAL_CONTINUE_WATCHING;
+    return [];
   }
 }
 

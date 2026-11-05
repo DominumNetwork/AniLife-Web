@@ -1,42 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { ANIME_CATALOG } from '../utils/animeData';
-import {
-  ArrowLeft,
-  RotateCcw,
-  CheckCheck,
-  Bell,
-  Play,
-  Sparkles,
-  Server
-} from 'lucide-react';
+import { ArrowLeft, RotateCcw, CheckCheck, Bell } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
 }
 
 export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
-  const { playAnimeEpisode } = useApp();
-
-  const [hasError, setHasError] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'n-1',
-      title: 'Development Phase',
-      body: 'AniLife is currently in development. Feel free to check back here for updates!',
-      animeId: null,
-      epNumber: null,
-      time: '2 hours ago',
-      unread: true,
-    }
-  ]);
+  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; body: string; time: string; unread: boolean }>>([]);
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-  };
-
-  const handleRefresh = () => {
-    setHasError(false);
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
   return (
@@ -54,73 +28,41 @@ export const NotificationsModal: React.FC<Props> = ({ onClose }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-            title="Refresh"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={markAllRead}
-            className="text-xs font-semibold text-purple-300 hover:text-white px-2 py-1.5 cursor-pointer"
-          >
-            Mark all read
-          </button>
+          {notifications.length > 0 && (
+            <button
+              onClick={markAllRead}
+              className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <CheckCheck className="w-3.5 h-3.5" />
+              <span>Mark all read</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="max-w-2xl w-full mx-auto p-4 sm:p-6 flex-1">
-        {hasError ? (
-          <div className="my-auto py-24 text-center space-y-4">
-            <h3 className="text-lg font-bold text-white">Couldn't load notifications.</h3>
-            <p className="text-xs text-zinc-400">NET-08</p>
-            <button
-              onClick={() => setHasError(false)}
-              className="px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 font-semibold text-xs text-white shadow-lg cursor-pointer"
-            >
-              Try again
-            </button>
+      <div className="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-8 flex flex-col justify-center">
+        {notifications.length === 0 ? (
+          <div className="text-center py-20 space-y-3">
+            <div className="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+              <Bell className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-semibold text-white">No notifications</h3>
+            <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+              You are all caught up! New episode release notices and schedule updates will appear here.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {notifications.map((item) => (
+            {notifications.map((n) => (
               <div
-                key={item.id}
-                className={`p-4 rounded-2xl border transition-all ${
-                  item.unread
-                    ? 'bg-purple-900/20 border-purple-500/40'
-                    : 'bg-white/5 border-white/10'
-                }`}
+                key={n.id}
+                className="p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-start gap-3.5"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-white">{item.title}</span>
-                      {item.unread && (
-                        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                      )}
-                    </div>
-                    <p className="text-xs text-zinc-300 leading-relaxed">{item.body}</p>
-                    <span className="text-[10px] text-zinc-500 block pt-1">{item.time}</span>
-                  </div>
-
-                  {item.animeId && (
-                    <button
-                      onClick={() => {
-                        const anime = ANIME_CATALOG.find(a => a.id === item.animeId);
-                        if (anime) {
-                          onClose();
-                          playAnimeEpisode(anime, item.epNumber || 1);
-                        }
-                      }}
-                      className="p-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white shrink-0 cursor-pointer shadow-md"
-                      title="Watch Episode"
-                    >
-                      <Play className="w-4 h-4 fill-white" />
-                    </button>
-                  )}
+                <div className="w-2.5 h-2.5 rounded-full bg-[#74cf66] mt-1.5 shrink-0" />
+                <div className="space-y-1">
+                  <div className="text-sm font-bold text-white">{n.title}</div>
+                  <div className="text-xs text-zinc-400">{n.body}</div>
+                  <div className="text-[10px] text-zinc-500">{n.time}</div>
                 </div>
               </div>
             ))}

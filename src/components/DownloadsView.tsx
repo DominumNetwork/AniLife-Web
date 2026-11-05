@@ -1,195 +1,284 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { Anime, Episode } from '../types/anime';
 import { ANIME_CATALOG } from '../utils/animeData';
 import {
-  Download,
-  HardDrive,
+  ArrowLeft,
   Play,
   Trash2,
-  CheckCircle2,
-  Wifi,
-  Settings2
+  Folder,
+  LayoutList,
+  LayoutGrid,
+  DownloadCloud,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 
-interface DownloadedItem {
+interface SavedDownload {
   id: string;
   animeId: string;
+  animeTitle: string;
+  posterImage: string;
   episodeNumber: number;
-  title: string;
+  episodeTitle: string;
+  thumbnail: string;
   sizeMb: number;
-  quality: string;
-  dateDownloaded: string;
+  downloadDate: string;
+}
+
+const STORAGE_DOWNLOADS_KEY = 'anilife_saved_downloads_v1';
+
+function getSavedDownloads(): SavedDownload[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_DOWNLOADS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedDownloads(items: SavedDownload[]) {
+  try {
+    localStorage.setItem(STORAGE_DOWNLOADS_KEY, JSON.stringify(items));
+  } catch {}
 }
 
 export const DownloadsView: React.FC = () => {
-  const { playAnimeEpisode } = useApp();
+  const { playAnimeEpisode, setActiveTab, setSelectedAnime } = useApp();
+  const [downloads, setDownloads] = useState<SavedDownload[]>(getSavedDownloads);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const [downloads, setDownloads] = useState<DownloadedItem[]>([
-    {
-      id: 'dl-1',
-      animeId: 'gushing-over-magical-girls',
-      episodeNumber: 1,
-      title: 'A Villain Is Born?!',
-      sizeMb: 340,
-      quality: '1080p',
-      dateDownloaded: 'Nov 1, 2026'
-    },
-    {
-      id: 'dl-2',
-      animeId: 'gushing-over-magical-girls',
-      episodeNumber: 2,
-      title: 'Her Name Is Magia Baiser!',
-      sizeMb: 355,
-      quality: '1080p',
-      dateDownloaded: 'Nov 1, 2026'
-    },
-    {
-      id: 'dl-3',
-      animeId: 'eminence-in-shadow',
-      episodeNumber: 1,
-      title: 'The Hated Classmate',
-      sizeMb: 410,
-      quality: '1080p',
-      dateDownloaded: 'Oct 30, 2026'
+  useEffect(() => {
+    persistSavedDownloads(downloads);
+  }, [downloads]);
+
+  // Group downloads by Anime
+  const animeGroups = React.useMemo(() => {
+    const map = new Map<string, { animeTitle: string; posterImage: string; items: SavedDownload[] }>();
+    for (const d of downloads) {
+      if (!map.has(d.animeId)) {
+        map.set(d.animeId, {
+          animeTitle: d.animeTitle,
+          posterImage: d.posterImage,
+          items: []
+        });
+      }
+      map.get(d.animeId)!.items.push(d);
     }
-  ]);
+    return Array.from(map.entries()).map(([animeId, data]) => ({
+      animeId,
+      ...data,
+      totalSizeMb: data.items.reduce((acc, it) => acc + it.sizeMb, 0)
+    }));
+  }, [downloads]);
 
-  const totalUsedMb = downloads.reduce((acc, item) => acc + item.sizeMb, 0);
-  const totalUsedGb = (totalUsedMb / 1024).toFixed(1);
-  const maxStorageGb = 64;
-  const usedPercent = Math.min(100, Math.round((totalUsedMb / (maxStorageGb * 1024)) * 100));
-
-  const handleDelete = (id: string) => {
-    setDownloads(prev => prev.filter(d => d.id !== id));
+  const handleDeleteItem = (id: string) => {
+    setDownloads((prev) => prev.filter((d) => d.id !== id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
-  const handlePlayDownloaded = (item: DownloadedItem) => {
-    const anime = ANIME_CATALOG.find(a => a.id === item.animeId);
-    if (anime) {
-      playAnimeEpisode(anime, item.episodeNumber);
+  const handleRemoveAllForAnime = (animeId: string) => {
+    setDownloads((prev) => prev.filter((d) => d.animeId !== animeId));
+  };
+
+  const handlePlay = (animeId: string, episodeNumber: number) => {
+    const matched = ANIME_CATALOG.find((a) => a.id === animeId);
+    if (matched) {
+      playAnimeEpisode(matched, episodeNumber);
     }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Downloads</h1>
-        <p className="text-sm text-zinc-400 mt-1">Manage offline anime episodes & storage</p>
+      {/* Top Breadcrumb Header */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setActiveTab('home')}
+          className="flex items-center gap-1.5 text-xs font-semibold text-[#74cf66] hover:text-white transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Downloads</span>
+        </button>
       </div>
 
-      <div className="p-5 rounded-3xl bg-black/40 border border-purple-500/20 backdrop-blur-xl space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <HardDrive className="w-4 h-4 text-purple-400" />
-            <span className="font-semibold text-white">Device Storage</span>
+      {downloads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500">
+            <DownloadCloud className="w-8 h-8" />
           </div>
-          <span className="text-xs text-zinc-300">
-            <strong className="text-purple-400">{totalUsedGb} GB</strong> used of {maxStorageGb} GB
-          </span>
-        </div>
-
-        <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
-            style={{ width: `${Math.max(3, usedPercent)}%` }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-zinc-400 pt-1">
-          <div className="flex items-center gap-1.5">
-            <Wifi className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Download over Wi-Fi only: On</span>
-          </div>
-          <span>Auto-delete watched: Off</span>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
-          <span>Downloaded Episodes ({downloads.length})</span>
-          {downloads.length > 0 && (
-            <button
-              onClick={() => setDownloads([])}
-              className="hover:text-red-400 transition-colors cursor-pointer"
-            >
-              Clear all
-            </button>
-          )}
-        </div>
-
-        {downloads.length === 0 ? (
-          <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-            <Download className="w-10 h-10 text-zinc-500 mx-auto" />
-            <h3 className="text-lg font-bold text-white">No downloaded episodes</h3>
-            <p className="text-sm text-zinc-400">
-              Download episodes from the anime details page to watch them offline anytime.
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-white">No episodes downloaded</h2>
+            <p className="text-sm text-zinc-400 max-w-sm">
+              Episodes you download while watching will appear here for offline playback.
             </p>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {downloads.map((item) => {
-              const anime = ANIME_CATALOG.find(a => a.id === item.animeId);
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-all hover:bg-white/10 group"
-                >
-                  <div
-                    onClick={() => handlePlayDownloaded(item)}
-                    className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
-                  >
-                    <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-black/60 shrink-0">
-                      {anime?.posterImage && (
-                        <img
-                          src={anime.posterImage}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <Play className="w-4 h-4 text-white fill-white" />
+          <button
+            onClick={() => setActiveTab('search')}
+            className="px-5 py-2.5 rounded-xl bg-[#74cf66] hover:bg-[#62b956] text-black text-xs font-bold transition-all shadow-[0_0_15px_rgba(116,207,102,0.3)] cursor-pointer"
+          >
+            Browse Anime
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {animeGroups.map((group) => {
+            const sizeGb = (group.totalSizeMb / 1024).toFixed(1);
+            return (
+              <div key={group.animeId} className="space-y-4">
+                {/* Hero Header Card (Matching Desktop Screenshot 2 & 3) */}
+                <div className="relative rounded-2xl bg-[#16161a] border border-white/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={group.posterImage}
+                      alt={group.animeTitle}
+                      className="w-16 h-22 sm:w-20 sm:h-28 rounded-xl object-cover ring-1 ring-white/10 shrink-0 shadow-lg"
+                    />
+                    <div className="space-y-1">
+                      <h2 className="text-xl sm:text-2xl font-bold text-white">
+                        {group.animeTitle}
+                      </h2>
+                      <div className="text-xs text-zinc-400">
+                        {group.items.length} {group.items.length === 1 ? 'episode' : 'episodes'} saved · {sizeGb} GB
                       </div>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300">
-                          EP {item.episodeNumber}
-                        </span>
-                        <span className="text-xs text-zinc-400">{anime?.title}</span>
+                      <div className="pt-2 flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => handlePlay(group.animeId, group.items[0]?.episodeNumber || 1)}
+                          className="px-4 py-1.5 rounded-full bg-[#f472b6] hover:bg-[#ec4899] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Play Episode {group.items[0]?.episodeNumber || 1}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const matched = ANIME_CATALOG.find((a) => a.id === group.animeId);
+                            if (matched) setSelectedAnime(matched);
+                          }}
+                          className="px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 text-xs font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                        >
+                          Title page
+                        </button>
+                        <button
+                          onClick={() => handleRemoveAllForAnime(group.animeId)}
+                          className="px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                        >
+                          Remove all
+                        </button>
                       </div>
-                      <h4 className="font-semibold text-sm text-white truncate mt-0.5 group-hover:text-purple-300 transition-colors">
-                        {item.title}
-                      </h4>
-                      <p className="text-[11px] text-zinc-400">
-                        {item.sizeMb} MB • {item.quality} • {item.dateDownloaded}
-                      </p>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-2">
+                {/* Subheader: Episodes Label & View Toggle */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    <span>Episodes</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-0.5">
                     <button
-                      onClick={() => handlePlayDownloaded(item)}
-                      className="p-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white transition-colors cursor-pointer"
-                      title="Play offline"
+                      onClick={() => setViewMode('list')}
+                      className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+                      title="List View"
                     >
-                      <Play className="w-4 h-4 fill-white" />
+                      <LayoutList className="w-4 h-4" />
                     </button>
-
                     <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 rounded-full hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
-                      title="Delete download"
+                      onClick={() => setViewMode('grid')}
+                      className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+                      title="Grid View"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <LayoutGrid className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
+                {/* Episodes List / Grid */}
+                <div className={viewMode === 'list' ? 'space-y-2' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'}>
+                  {group.items.map((item) => {
+                    const isSelected = selectedIds.has(item.id);
+                    return (
+                      <div
+                        key={item.id}
+                        className="group rounded-xl bg-[#141418] hover:bg-[#1a1a20] border border-white/5 p-3 flex items-center justify-between gap-3 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <button
+                            onClick={() => toggleSelect(item.id)}
+                            className="text-zinc-500 hover:text-white shrink-0 cursor-pointer"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-[#74cf66]" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                          <div className="relative w-24 sm:w-28 aspect-video rounded-lg overflow-hidden bg-black shrink-0">
+                            <img
+                              src={item.thumbnail || item.posterImage}
+                              alt={item.episodeTitle}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors flex items-center justify-center">
+                              <button
+                                onClick={() => handlePlay(item.animeId, item.episodeNumber)}
+                                className="w-7 h-7 rounded-full bg-white/90 text-black flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-bold text-white truncate">
+                              Episode {item.episodeNumber}
+                            </div>
+                            <div className="text-[11px] text-zinc-400 truncate">
+                              {item.episodeTitle}
+                            </div>
+                            <div className="text-[10px] text-zinc-500">
+                              {item.sizeMb} MB
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions on right */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => handlePlay(item.animeId, item.episodeNumber)}
+                            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                            title="Play"
+                          >
+                            <Play className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            title="Delete Download"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

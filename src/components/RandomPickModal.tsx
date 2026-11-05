@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { Anime } from '../types/anime';
-import { Dices, Play, RefreshCw, X, Star, Sparkles, Info } from 'lucide-react';
+import { Dices, Play, RefreshCw, X, Star, Info } from 'lucide-react';
 
 const RANDOM_CATEGORIES = [
   'Anything',
@@ -16,20 +16,20 @@ const RANDOM_CATEGORIES = [
   'Slice of Life',
   'Supernatural',
   'Mystery',
-  'Dubbed'
+  'Psychological',
+  'Sports',
+  'Shounen',
+  'Seinen',
+  'Dubbed',
+  'Top Rated'
 ] as const;
 
 type RandomCategory = (typeof RANDOM_CATEGORIES)[number];
 
-const BACKUP_COVERS = [
-  'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1280&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1280&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1280&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1563089145-599997674d42?w=1280&auto=format&fit=crop'
-];
+const ANIME_FALLBACK_IMAGE = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-n2hr0omr9adP.jpg';
 
 export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { playAnimeEpisode, setSelectedAnime, liveCatalog } = useApp();
+  const { playAnimeEpisode, setSelectedAnime, liveCatalog, settings } = useApp();
 
   const [selectedFilter, setSelectedFilter] = useState<RandomCategory>('Anything');
   const [isRolling, setIsRolling] = useState(false);
@@ -37,9 +37,10 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
   const availableAnime = useMemo(() => {
     const catalog = liveCatalog && liveCatalog.length > 0 ? liveCatalog : [];
     if (selectedFilter === 'Anything') return catalog;
-    if (selectedFilter === 'Dubbed') return catalog.filter(a => a.hasDub);
-    return catalog.filter(a => 
-      a.genres && a.genres.some(g => g.toLowerCase() === selectedFilter.toLowerCase())
+    if (selectedFilter === 'Dubbed') return catalog.filter((a) => a.hasDub);
+    if (selectedFilter === 'Top Rated') return catalog.filter((a) => (a.score || 0) >= 80);
+    return catalog.filter((a) =>
+      a.genres && a.genres.some((g) => g.toLowerCase() === selectedFilter.toLowerCase())
     );
   }, [liveCatalog, selectedFilter]);
 
@@ -54,32 +55,38 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
 
     setTimeout(() => {
       let nextPick = candidates[Math.floor(Math.random() * candidates.length)];
-      if (candidates.length > 1 && nextPick.id === pickedAnime.id) {
-        nextPick = candidates.find(c => c.id !== pickedAnime.id) || nextPick;
+      if (candidates.length > 1 && nextPick.id === pickedAnime?.id) {
+        nextPick = candidates.find((c) => c.id !== pickedAnime?.id) || nextPick;
       }
       setPickedAnime(nextPick);
       setIsRolling(false);
-    }, 450);
+    }, 350);
   };
 
   const handleCategoryChange = (category: RandomCategory) => {
     setSelectedFilter(category);
     let filtered = liveCatalog;
     if (category === 'Dubbed') {
-      filtered = liveCatalog.filter(a => a.hasDub);
+      filtered = liveCatalog.filter((a) => a.hasDub);
+    } else if (category === 'Top Rated') {
+      filtered = liveCatalog.filter((a) => (a.score || 0) >= 80);
     } else if (category !== 'Anything') {
-      filtered = liveCatalog.filter(a =>
-        a.genres && a.genres.some(g => g.toLowerCase() === category.toLowerCase())
+      filtered = liveCatalog.filter((a) =>
+        a.genres && a.genres.some((g) => g.toLowerCase() === category.toLowerCase())
       );
     }
     const pool = filtered.length > 0 ? filtered : liveCatalog;
     setPickedAnime(pool[Math.floor(Math.random() * pool.length)]);
   };
 
-  const animeImage =
-    pickedAnime.bannerImage ||
-    pickedAnime.posterImage ||
-    BACKUP_COVERS[Math.abs(pickedAnime.title.length) % BACKUP_COVERS.length];
+  if (!pickedAnime) return null;
+
+  const displayTitle =
+    settings.titleLanguage === 'romaji'
+      ? pickedAnime.romajiTitle || pickedAnime.title
+      : settings.titleLanguage === 'native'
+      ? pickedAnime.nativeTitle || pickedAnime.romajiTitle || pickedAnime.title
+      : pickedAnime.title || pickedAnime.romajiTitle;
 
   return (
     <div
@@ -87,103 +94,96 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[#14121e] border border-purple-500/30 rounded-3xl p-6 shadow-2xl text-white space-y-5 animate-slideUp overflow-hidden flex flex-col max-h-[92vh]"
+        className="w-full max-w-lg bg-[#121216] border border-zinc-800 rounded-3xl p-6 shadow-2xl text-white space-y-5 animate-slideUp overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-purple-600/30 text-purple-400">
+            <div className="p-2.5 rounded-xl bg-[#74cf66]/20 text-[#74cf66]">
               <Dices className={`w-5 h-5 ${isRolling ? 'animate-spin' : ''}`} />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-base text-white">Random Pick</h3>
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              </div>
-              <p className="text-xs text-zinc-400">Can't decide what to watch next?</p>
+              <h2 className="text-lg font-bold text-white">Random Anime</h2>
+              <p className="text-xs text-zinc-400">Can't decide? Let fate pick your next show</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          {RANDOM_CATEGORIES.map((category) => {
-            const isSelected = selectedFilter === category;
-            return (
-              <button
-                key={category}
-                onClick={() => handleCategoryChange(category)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold'
-                    : 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
+        {/* Category Pills */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+          {RANDOM_CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => handleCategoryChange(cat)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                selectedFilter === cat
+                  ? 'bg-[#74cf66] text-black shadow-[0_0_10px_rgba(116,207,102,0.3)]'
+                  : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden aspect-[16/10] border border-white/10 shadow-xl group bg-black/60">
+        {/* Anime Showcase Card */}
+        <div className="relative rounded-2xl overflow-hidden aspect-video bg-zinc-900 border border-zinc-800 shadow-xl group">
           <img
-            src={animeImage}
-            alt={pickedAnime.title}
-            className={`w-full h-full object-cover transition-all duration-500 ${
-              isRolling ? 'blur-md scale-105 opacity-60' : 'blur-0 scale-100 opacity-100'
-            }`}
+            src={pickedAnime.bannerImage || pickedAnime.posterImage || ANIME_FALLBACK_IMAGE}
+            alt={displayTitle}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = BACKUP_COVERS[0];
+              e.currentTarget.src = ANIME_FALLBACK_IMAGE;
             }}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-          <div className="absolute bottom-3.5 left-4 right-4 space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="flex items-center gap-1 text-[11px] font-bold text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2.5 py-0.5 rounded-full">
-                <Star className="w-3 h-3 fill-purple-400 text-purple-400" />
-                <span>{pickedAnime.score}%</span>
-              </span>
-              <span className="text-xs text-zinc-300 font-medium">
-                {pickedAnime.format} • {pickedAnime.year}
-              </span>
-              {pickedAnime.hasDub && (
-                <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                  DUB
-                </span>
-              )}
-            </div>
+          {/* Top badges */}
+          <div className="absolute top-3 inset-x-3 flex items-center justify-between">
+            <span className="px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[11px] font-bold text-white flex items-center gap-1">
+              <Star className="w-3 h-3 fill-[#74cf66] text-[#74cf66]" />
+              <span>{pickedAnime.score || 75}%</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-[#74cf66] text-black text-[10px] font-bold">
+              {pickedAnime.format || 'TV'}
+            </span>
+          </div>
 
-            <h4 className="font-extrabold text-base sm:text-lg text-white leading-tight">
-              {pickedAnime.title}
-            </h4>
-
-            {pickedAnime.genres && pickedAnime.genres.length > 0 && (
-              <div className="text-[11px] text-purple-300 font-semibold truncate">
-                {pickedAnime.genres.slice(0, 4).join(' • ')}
-              </div>
-            )}
-
+          {/* Bottom details */}
+          <div className="absolute bottom-0 inset-x-0 p-4 space-y-1.5">
+            <h3 className="text-xl font-bold text-white line-clamp-1">{displayTitle}</h3>
             <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
-              {pickedAnime.synopsis || 'An exciting anime ready to stream in HD.'}
+              {pickedAnime.synopsis}
             </p>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {pickedAnime.genres?.slice(0, 3).map((g) => (
+                <span
+                  key={g}
+                  className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-semibold text-zinc-300"
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5 pt-1">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 pt-2">
           <button
             onClick={rollDice}
             disabled={isRolling}
-            className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+            className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-            <span>Reroll</span>
+            <span>Roll Again</span>
           </button>
 
           <button
@@ -191,10 +191,10 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
               onClose();
               setSelectedAnime(pickedAnime);
             }}
-            className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+            className="px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            title="Details"
           >
-            <Info className="w-4 h-4 text-purple-300" />
-            <span>Details</span>
+            <Info className="w-4 h-4" />
           </button>
 
           <button
@@ -202,10 +202,10 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
               onClose();
               playAnimeEpisode(pickedAnime, 1);
             }}
-            className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-purple-600/30 cursor-pointer"
+            className="flex-1 py-3 rounded-xl bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_0_12px_rgba(116,207,102,0.3)] cursor-pointer"
           >
-            <Play className="w-4 h-4 fill-white" />
-            <span>Watch</span>
+            <Play className="w-4 h-4 fill-black" />
+            <span>Watch Now</span>
           </button>
         </div>
       </div>
