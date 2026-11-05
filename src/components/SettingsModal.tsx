@@ -155,7 +155,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       </div>
 
       {dataMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full bg-purple-600 text-white font-bold text-xs shadow-2xl shadow-purple-600/50">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full bg-[#74cf66] text-black font-bold text-xs shadow-2xl shadow-[rgba(116,207,102,0.5)]">
           {dataMessage}
         </div>
       )}
@@ -181,11 +181,11 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 onClick={() => setActiveSection(item.id as any)}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                    ? 'bg-[#74cf66] text-black shadow-md shadow-[rgba(116,207,102,0.3)]'
                     : 'bg-white/5 hover:bg-white/10 text-zinc-300'
                 }`}
               >
-                <Icon className="w-4 h-4 text-purple-300" />
+                <Icon className={`w-4 h-4 ${isSelected ? 'text-black' : 'text-[#74cf66]'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -246,7 +246,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                         onClick={() => applyThemePreset(preset)}
                         className={`flex items-center gap-3 p-3 rounded-2xl text-left transition-all cursor-pointer border ${
                           isSelected
-                            ? 'bg-purple-600/30 border-purple-400 text-white shadow-lg'
+                            ? 'bg-[#74cf66]/20 border-[#74cf66] text-white shadow-lg'
                             : 'bg-white/5 hover:bg-white/10 border-white/5 text-zinc-300'
                         }`}
                       >
@@ -258,7 +258,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           <div className="font-bold text-xs truncate">{preset}</div>
                           <div className="text-[10px] text-zinc-400 capitalize">{meta.canvas}</div>
                         </div>
-                        {isSelected && <Check className="w-4 h-4 text-purple-400 shrink-0" />}
+                        {isSelected && <Check className="w-4 h-4 text-[#74cf66] shrink-0" />}
                       </button>
                     );
                   })}
@@ -275,7 +275,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     onClick={() => updateSettings({ canvasBackground: 'amoled' })}
                     className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
                       settings.canvasBackground === 'amoled'
-                        ? 'bg-purple-600/30 border-purple-400 text-white'
+                        ? 'bg-[#74cf66]/20 border-[#74cf66] text-white'
                         : 'bg-black/60 border-white/10 text-zinc-400 hover:text-white'
                     }`}
                   >
@@ -287,7 +287,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     onClick={() => updateSettings({ canvasBackground: 'dark' })}
                     className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
                       settings.canvasBackground === 'dark'
-                        ? 'bg-purple-600/30 border-purple-400 text-white'
+                        ? 'bg-[#74cf66]/20 border-[#74cf66] text-white'
                         : 'bg-[#121214] border-white/10 text-zinc-400 hover:text-white'
                     }`}
                   >
@@ -309,7 +309,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       onClick={() => updateSettings({ backdropSource: mode })}
                       className={`py-2 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
                         settings.backdropSource === mode
-                          ? 'bg-purple-600 text-white'
+                          ? 'bg-[#74cf66] text-black font-bold'
                           : 'bg-white/5 hover:bg-white/10 text-zinc-400'
                       }`}
                     >
@@ -325,7 +325,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                         key={bd.title}
                         onClick={() => updateSettings({ backdropImage: bd.url })}
                         className={`relative aspect-video rounded-xl overflow-hidden border transition-all cursor-pointer ${
-                          settings.backdropImage === bd.url ? 'border-purple-400 ring-2 ring-purple-500' : 'border-white/10'
+                          settings.backdropImage === bd.url ? 'border-[#74cf66] ring-2 ring-[#74cf66]' : 'border-white/10'
                         }`}
                         title={bd.title}
                       >
@@ -345,7 +345,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       value={customBackdropUrl}
                       onChange={(e) => setCustomBackdropUrl(e.target.value)}
                       placeholder="https://.../backdrop.jpg"
-                      className="flex-1 px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-purple-500"
+                      className="flex-1 px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-[#74cf66]"
                     />
                     <button
                       onClick={() => {
@@ -354,7 +354,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           showNotice('Backdrop updated');
                         }
                       }}
-                      className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#74cf66] text-xs font-bold text-black cursor-pointer"
                     >
                       Apply
                     </button>
@@ -371,7 +371,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                             key={dim}
                             onClick={() => updateSettings({ backdropDim: dim })}
                             className={`flex-1 py-1 rounded-lg text-xs font-bold ${
-                              settings.backdropDim === dim ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                              settings.backdropDim === dim ? 'bg-[#74cf66] text-black font-bold' : 'bg-white/5 text-zinc-400'
                             }`}
                           >
                             {dim}
@@ -386,7 +386,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                         <button
                           onClick={() => updateSettings({ backdropBlur: !settings.backdropBlur })}
                           className={`w-full py-1 rounded-lg text-xs font-bold ${
-                            settings.backdropBlur ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                            settings.backdropBlur ? 'bg-[#74cf66] text-black font-bold' : 'bg-white/5 text-zinc-400'
                           }`}
                         >
                           {settings.backdropBlur ? 'Enabled (Smooth)' : 'Disabled (Sharp)'}
@@ -519,7 +519,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     type="checkbox"
                     checked={settings.autoPlayNext}
                     onChange={(e) => updateSettings({ autoPlayNext: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
 
@@ -532,7 +532,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     type="checkbox"
                     checked={settings.autoSkipIntro}
                     onChange={(e) => updateSettings({ autoSkipIntro: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
 
@@ -545,7 +545,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     type="checkbox"
                     checked={settings.skipFiller}
                     onChange={(e) => updateSettings({ skipFiller: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
               </div>
@@ -557,7 +557,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   <select
                     value={settings.defaultQuality}
                     onChange={(e) => updateSettings({ defaultQuality: e.target.value as any })}
-                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-purple-500"
+                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#74cf66]"
                   >
                     <option value="Auto">Auto (Adaptive)</option>
                     <option value="1080p">1080p Full HD</option>
@@ -571,7 +571,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   <select
                     value={settings.screenFit}
                     onChange={(e) => updateSettings({ screenFit: e.target.value as any })}
-                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-purple-500"
+                    className="w-full p-2.5 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#74cf66]"
                   >
                     <option value="Fit">Fit (Aspect Ratio)</option>
                     <option value="Crop">Crop (Zoom to Fill)</option>
@@ -598,7 +598,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     <button
                       onClick={() => updateSettings({ defaultAudioMode: 'SUB' })}
                       className={`py-2 rounded-xl text-xs font-bold ${
-                        settings.defaultAudioMode === 'SUB' ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                        settings.defaultAudioMode === 'SUB' ? 'bg-[#74cf66] text-black font-bold' : 'bg-white/5 text-zinc-400'
                       }`}
                     >
                       Japanese (Sub)
@@ -606,7 +606,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     <button
                       onClick={() => updateSettings({ defaultAudioMode: 'DUB' })}
                       className={`py-2 rounded-xl text-xs font-bold ${
-                        settings.defaultAudioMode === 'DUB' ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                        settings.defaultAudioMode === 'DUB' ? 'bg-[#74cf66] text-black font-bold' : 'bg-white/5 text-zinc-400'
                       }`}
                     >
                       English / Localized (Dub)
@@ -639,7 +639,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     type="checkbox"
                     checked={settings.subtitlesOnDub}
                     onChange={(e) => updateSettings({ subtitlesOnDub: e.target.checked })}
-                    className="w-5 h-5 accent-purple-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-[#74cf66] rounded cursor-pointer"
                   />
                 </label>
               </div>
@@ -654,10 +654,10 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
               {/* Enabled Servers Card matching user screenshots */}
               <div
                 onClick={() => setShowEnabledServersModal(true)}
-                className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 to-[#181528] border border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer shadow-lg"
+                className="flex items-center justify-between p-4 rounded-2xl bg-[#74cf66]/10 border border-[#74cf66]/30 hover:border-[#74cf66]/50 transition-all cursor-pointer shadow-lg"
               >
                 <div>
-                  <div className="text-[11px] font-bold text-purple-400 uppercase tracking-wider">
+                  <div className="text-[11px] font-bold text-[#74cf66] uppercase tracking-wider">
                     SERVERS
                   </div>
                   <div className="text-base font-bold text-white mt-0.5">Enabled servers</div>
@@ -666,8 +666,8 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-purple-300 hidden sm:inline">Configure</span>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <span className="text-xs font-semibold text-[#74cf66] hidden sm:inline">Configure</span>
+                  <ChevronRight className="w-5 h-5 text-[#74cf66]" />
                 </div>
               </div>
 
@@ -702,7 +702,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       key={serverId}
                       className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
                         isDefault
-                          ? 'bg-purple-950/40 border-purple-500/60'
+                          ? 'bg-[#74cf66]/20 border-[#74cf66]/60'
                           : isEnabled
                           ? 'bg-white/5 border-white/5'
                           : 'bg-black/40 border-white/5 opacity-50'
@@ -716,12 +716,12 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-xs text-white truncate">{server.name}</span>
                             {server.badge && (
-                              <span className="px-2 py-0.2 rounded-full bg-purple-900/50 text-[9px] font-bold text-purple-300">
+                              <span className="px-2 py-0.2 rounded-full bg-[#74cf66]/20 text-[9px] font-bold text-[#74cf66]">
                                 {server.badge}
                               </span>
                             )}
                             {isDefault && (
-                              <span className="text-[10px] text-purple-400 font-bold">Active Server</span>
+                              <span className="text-[10px] text-[#74cf66] font-bold">Active Server</span>
                             )}
                           </div>
                           <p className="text-[10px] text-zinc-400 line-clamp-1">{server.description}</p>
@@ -759,7 +759,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                         <button
                           onClick={() => toggleServerEnabled(serverId)}
                           className={`p-1.5 rounded-lg cursor-pointer ${
-                            isEnabled ? 'bg-purple-600/30 text-purple-300' : 'bg-zinc-800 text-zinc-500'
+                            isEnabled ? 'bg-[#74cf66]/30 text-[#74cf66]' : 'bg-zinc-800 text-zinc-500'
                           }`}
                           title={isEnabled ? 'Disable provider' : 'Enable provider'}
                         >
@@ -926,7 +926,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                       key={lang}
                       onClick={() => updateSettings({ titleLanguage: lang })}
                       className={`py-2 rounded-xl text-xs font-bold capitalize ${
-                        settings.titleLanguage === lang ? 'bg-purple-600 text-white' : 'bg-white/5 text-zinc-400'
+                        settings.titleLanguage === lang ? 'bg-[#74cf66] text-black font-bold' : 'bg-white/5 text-zinc-400'
                       }`}
                     >
                       {lang}
@@ -964,12 +964,12 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   onClick={handleExportData}
                   className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-purple-400" />
+                  <Download className="w-4 h-4 text-[#74cf66]" />
                   <span>Export Backup JSON</span>
                 </button>
 
                 <label className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer">
-                  <Upload className="w-4 h-4 text-purple-400" />
+                  <Upload className="w-4 h-4 text-[#74cf66]" />
                   <span>Import Backup JSON</span>
                   <input type="file" accept=".json" onChange={handleImportData} className="hidden" />
                 </label>

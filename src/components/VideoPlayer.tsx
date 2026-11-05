@@ -93,8 +93,9 @@ export const VideoPlayer: React.FC<Props> = ({
     return anime.seasons[0]?.episodes || [];
   });
 
-  // Direct MP4 stream URL from media-index lili archive
-  const [streamUrl, setStreamUrl] = useState<string>('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4');
+  // Direct MP4 or HLS stream URL from media-index or scrapers
+  const [streamUrl, setStreamUrl] = useState<string>('');
+  const [streamError, setStreamError] = useState<boolean>(false);
 
   // Clock string
   const [clockString, setClockString] = useState('');
@@ -118,7 +119,7 @@ export const VideoPlayer: React.FC<Props> = ({
             title: e.title || `Episode ${e.number}`,
             durationSec: (e.length || e.runtime || anime.durationMins || 24) * 60,
             thumbnail: e.image || e.still || anime.bannerImage || anime.posterImage,
-            videoUrl: streamUrl,
+            videoUrl: '',
             synopsis: e.description || e.overview,
             airedDate: e.airDate || e.air_date
           }));
@@ -137,13 +138,14 @@ export const VideoPlayer: React.FC<Props> = ({
     }
   }, [numericAniListId, currentEpisodeNumber]);
 
-  // 3. Resolve stream URL from scraper API on episode, server, or audio change
+  // 3. Resolve stream URL from scraper API or Lili media-index archive
   useEffect(() => {
     setIsLoading(true);
+    setStreamError(false);
     let isCancelled = false;
 
     async function resolveSource() {
-      // 1. Try backend scraper engine (Zoko, AniChan, XFDM, OnePace)
+      // 1. Try backend scraper engine (Zoko, Lili, AniChan, XFDM)
       try {
         const queryParams = new URLSearchParams({
           provider: activeServer.id,
@@ -195,29 +197,19 @@ export const VideoPlayer: React.FC<Props> = ({
           const lili = await fetchMediaIndexLiliStream(numericAniListId);
           if (lili && lili.episodes?.[String(currentEpisodeNumber)] && !isCancelled) {
             const direct = lili.base + lili.episodes[String(currentEpisodeNumber)];
-            const proxied = `/api/proxy-stream?url=${encodeURIComponent(direct)}&referer=${encodeURIComponent('https://play.xfvod.pro:8088/')}`;
-            setStreamUrl(proxied);
+            setStreamUrl(direct);
             setIsLoading(false);
             return;
           }
-        } catch {
-          // Ignored
+        } catch (err) {
+          console.warn('[VideoPlayer] Lili archive stream query error:', err);
         }
       }
 
-      // 3. Fallback reliable anime stream sample
-      const sampleFallback = [
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
-      ][(currentEpisodeNumber - 1) % 4];
-
+      // If stream resolution fails
       if (!isCancelled) {
-        setStreamUrl(sampleFallback);
-        setTimeout(() => {
-          if (!isCancelled) setIsLoading(false);
-        }, 600);
+        setIsLoading(false);
+        setStreamError(true);
       }
     }
 
@@ -415,7 +407,7 @@ export const VideoPlayer: React.FC<Props> = ({
   const isInEd = Array.isArray(skipData?.ed) && skipData.ed.length >= 2 && currentTime >= skipData.ed[0] && currentTime <= skipData.ed[1];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col overflow-y-auto select-none font-sans">
+    <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col h-full w-full overflow-hidden select-none font-sans">
       {/* Skip Notification Toast */}
       {skipToast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/80 backdrop-blur-xl border border-[#74cf66]/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
@@ -424,11 +416,11 @@ export const VideoPlayer: React.FC<Props> = ({
         </div>
       )}
 
-      {/* VIDEO CONTAINER */}
+      {/* VIDEO CONTAINER - Guaranteed visible on all screens (portrait, landscape, laptop, desktop) */}
       <div
         ref={containerRef}
         onClick={handleContainerClick}
-        className="relative w-full aspect-video max-h-[75vh] bg-black overflow-hidden flex items-center justify-center cursor-pointer group"
+        className="relative w-full shrink-0 aspect-video h-[45vh] sm:h-[55vh] lg:h-[65vh] max-h-[70vh] bg-black overflow-hidden flex items-center justify-center cursor-pointer group shadow-2xl"
       >
         {/* HTML5 Video Player */}
         <video
@@ -458,15 +450,7 @@ export const VideoPlayer: React.FC<Props> = ({
           playsInline
           onError={() => {
             setIsLoading(false);
-            const sampleFallback = [
-              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
-            ][(currentEpisodeNumber - 1) % 4];
-            if (streamUrl !== sampleFallback) {
-              setStreamUrl(sampleFallback);
-            }
+            setStreamError(true);
           }}
         >
           {subtitles.map((sub, idx) => (
@@ -480,6 +464,35 @@ export const VideoPlayer: React.FC<Props> = ({
             />
           ))}
         </video>
+
+        {/* STREAM ERROR OVERLAY */}
+        {streamError && !isLoading && (
+          <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-xl">
+              !
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-bold text-white">
+                Stream unavailable from {activeServer.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
+                Unable to load Episode {currentEpisodeNumber}. Please switch to another server or retry.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveDrawer('servers');
+                }}
+                className="px-5 py-2.5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs sm:text-sm shadow-lg shadow-[rgba(116,207,102,0.3)] transition-transform hover:scale-105 cursor-pointer"
+              >
+                Switch Server
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* LOADING SPINNER */}
         {isLoading && (
@@ -1174,8 +1187,8 @@ export const VideoPlayer: React.FC<Props> = ({
         )}
       </div>
 
-      {/* METADATA & EPISODES LIST BELOW PLAYER (Screenshot 220330) */}
-      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      {/* METADATA & EPISODES LIST BELOW PLAYER */}
+      <div className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Episode Title & Metadata */}
         <div className="space-y-1">
           <h2 className="text-xl sm:text-2xl font-black text-white">{currentEpisode.title}</h2>

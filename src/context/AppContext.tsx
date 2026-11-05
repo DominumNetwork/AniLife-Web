@@ -73,7 +73,7 @@ export function convertAniListToAnime(m: AniListMedia): Anime {
     title: `Episode ${i + 1}`,
     durationSec: (m.duration || 24) * 60,
     thumbnail: banner || poster || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    videoUrl: '',
     airedDate: m.seasonYear ? `${m.season || 'Fall'} ${m.seasonYear}` : undefined
   }));
 
@@ -95,7 +95,7 @@ export function convertAniListToAnime(m: AniListMedia): Anime {
     startDate: m.seasonYear ? `${m.season || 'Fall'} ${m.seasonYear}` : '2024',
     seasonName: m.season || 'Fall',
     membersCount: m.popularity || 85000,
-    trailerUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    trailerUrl: '',
     hasDub: true,
     hasSub: true,
     seasons: [

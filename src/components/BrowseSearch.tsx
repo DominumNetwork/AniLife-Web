@@ -132,11 +132,11 @@ export const BrowseSearch: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search anime by title, character, or genre..."
-            className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-black/60 border border-purple-500/30 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 shadow-inner transition-all"
+            className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-black/60 border border-[#74cf66]/30 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-[#74cf66] focus:ring-1 focus:ring-[#74cf66] shadow-inner transition-all"
           />
           <Search className="w-5 h-5 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           {isSearching ? (
-            <Loader2 className="w-4 h-4 text-purple-400 animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
+            <Loader2 className="w-4 h-4 text-[#74cf66] animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
           ) : query ? (
             <button
               type="button"
@@ -150,14 +150,14 @@ export const BrowseSearch: React.FC = () => {
 
         <button
           onClick={handleReset}
-          className="text-sm font-semibold text-purple-400 hover:text-purple-300 px-2 py-2 cursor-pointer transition-colors"
+          className="text-sm font-semibold text-[#74cf66] hover:text-[#62b956] px-2 py-2 cursor-pointer transition-colors"
         >
           Reset
         </button>
 
         <button
           onClick={() => alert('Filter options: sort by score, format, popularity, year.')}
-          className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-600/30 transition-all cursor-pointer shrink-0"
+          className="w-12 h-12 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black flex items-center justify-center shadow-lg shadow-[rgba(116,207,102,0.3)] transition-all cursor-pointer shrink-0"
           title="Filter and Sort"
         >
           <SlidersHorizontal className="w-5 h-5" />
@@ -171,7 +171,7 @@ export const BrowseSearch: React.FC = () => {
             <span>Recent searches</span>
             <button
               onClick={clearRecentSearches}
-              className="text-[11px] hover:text-purple-300 transition-colors cursor-pointer"
+              className="text-[11px] hover:text-[#74cf66] transition-colors cursor-pointer"
             >
               Clear all
             </button>
@@ -180,10 +180,10 @@ export const BrowseSearch: React.FC = () => {
             {recentSearches.map((term) => (
               <div
                 key={term}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-purple-500/20 text-xs text-zinc-300 group cursor-pointer transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-[#74cf66]/20 text-xs text-zinc-300 group cursor-pointer transition-all"
                 onClick={() => handleChipClick(term)}
               >
-                <History className="w-3.5 h-3.5 text-purple-400" />
+                <History className="w-3.5 h-3.5 text-[#74cf66]" />
                 <span>{term}</span>
                 <button
                   type="button"
@@ -215,7 +215,7 @@ export const BrowseSearch: React.FC = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-1 ring-purple-400/50'
+                    ? 'bg-[#74cf66] text-black shadow-md shadow-[rgba(116,207,102,0.3)] ring-1 ring-[#74cf66]/50'
                     : 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/5'
                 }`}
               >
@@ -233,7 +233,7 @@ export const BrowseSearch: React.FC = () => {
             {isSearching ? 'Searching AniList...' : `Showing ${filteredAnime.length} results`}
           </span>
           {query.trim().length >= 2 && (
-            <span className="text-purple-400 text-[11px] font-semibold">
+            <span className="text-[#74cf66] text-[11px] font-semibold">
               Live AniList Data
             </span>
           )}
@@ -253,7 +253,7 @@ export const BrowseSearch: React.FC = () => {
                 onClick={() => setSelectedAnime(anime)}
                 className="group cursor-pointer space-y-2"
               >
-                <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
+                <div className="relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 group-hover:border-[#74cf66]/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[rgba(116,207,102,0.2)] bg-zinc-900">
                   <img
                     src={anime.posterImage}
                     alt={anime.title}
@@ -263,8 +263,8 @@ export const BrowseSearch: React.FC = () => {
                     }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-purple-300 flex items-center gap-1">
-                    <Star className="w-2.5 h-2.5 fill-purple-400 text-purple-400" />
+                  <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-bold text-[#74cf66] flex items-center gap-1">
+                    <Star className="w-2.5 h-2.5 fill-[#74cf66] text-[#74cf66]" />
                     <span>{anime.score}%</span>
                   </div>
                   {anime.hasDub && (
@@ -274,7 +274,7 @@ export const BrowseSearch: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-xs sm:text-sm text-white line-clamp-1 group-hover:text-purple-300 transition-colors">
+                  <h3 className="font-semibold text-xs sm:text-sm text-white line-clamp-1 group-hover:text-[#74cf66] transition-colors">
                     {anime.title}
                   </h3>
                   <p className="text-[11px] text-zinc-400 line-clamp-1">

@@ -49,9 +49,9 @@ export const ContinueContextMenu: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md animate-fadeIn font-sans">
       <div
-        className="w-full max-w-lg bg-[#14121e]/95 border border-purple-500/20 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-y-auto max-h-[90vh] text-white"
+        className="w-full max-w-lg bg-[#0e0c18] border border-[#74cf66]/30 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-y-auto max-h-[90vh] text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Card */}
@@ -63,7 +63,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
               className="w-12 h-16 object-cover rounded-lg shadow-md border border-white/10"
             />
             <div>
-              <span className="text-[10px] tracking-wider uppercase font-bold text-purple-400">
+              <span className="text-[10px] tracking-wider uppercase font-bold text-[#74cf66]">
                 Continue Watching
               </span>
               <h3 className="font-bold text-base line-clamp-1">{anime.title}</h3>
@@ -89,7 +89,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
                 onClose();
                 onOpenDetails();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left"
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer"
             >
               <div>
                 <div className="text-sm font-medium">Details</div>
@@ -100,7 +100,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
 
             <button
               onClick={handleRemove}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-red-500/10 transition-colors text-left group"
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-red-500/10 transition-colors text-left group cursor-pointer"
             >
               <div>
                 <div className="text-sm font-medium text-red-400 group-hover:text-red-300">
@@ -130,18 +130,18 @@ export const ContinueContextMenu: React.FC<Props> = ({
                   onClick={() => handleStatusChange(opt.status)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-purple-600/30 border border-purple-500/40 text-purple-200'
+                      ? 'bg-[#74cf66]/20 border border-[#74cf66]/50 text-white font-semibold'
                       : 'bg-white/5 hover:bg-white/10 text-zinc-300'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isSelected ? 'text-purple-400' : 'text-zinc-400'}`} />
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-[#74cf66]' : 'text-zinc-400'}`} />
                     <div className="text-left">
                       <div className="text-sm font-medium">{opt.label}</div>
                       <div className="text-xs text-zinc-400">{opt.desc}</div>
                     </div>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-purple-400" />}
+                  {isSelected && <Check className="w-4 h-4 text-[#74cf66]" />}
                 </button>
               );
             })}
@@ -152,7 +152,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
         <div className="mt-5">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-sm font-medium transition-colors text-center"
+            className="w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-sm font-medium transition-colors text-center cursor-pointer"
           >
             Close
           </button>
@@ -161,3 +161,4 @@ export const ContinueContextMenu: React.FC<Props> = ({
     </div>
   );
 };
+

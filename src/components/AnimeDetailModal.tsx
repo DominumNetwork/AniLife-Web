@@ -15,7 +15,8 @@ import {
   ArrowUpDown,
   LayoutGrid,
   List,
-  Sparkles,
+  Lock,
+  Clock,
   Check
 } from 'lucide-react';
 
@@ -29,8 +30,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     playAnimeEpisode,
     watchlist,
     setAnimeWatchStatus,
-    continueWatching,
-    setSelectedAnime
+    continueWatching
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'Home' | 'Episodes' | 'Related'>('Home');
@@ -42,6 +42,24 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [watchedEpisodes, setWatchedEpisodes] = useState<Record<number, boolean>>({});
   const [realEpisodes, setRealEpisodes] = useState<Episode[]>([]);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
+  // Helper to check if an episode is unreleased
+  const isEpisodeUnreleased = (ep: Episode): boolean => {
+    if ('isUnreleased' in ep && ep.isUnreleased) return true;
+    if (ep.airedDate) {
+      const airDate = new Date(ep.airedDate);
+      if (!isNaN(airDate.getTime()) && airDate.getTime() > Date.now()) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   // Load real episodes from media-index CDN using universal AniList ID resolver
   useEffect(() => {
@@ -49,16 +67,21 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     if (numId) {
       fetchMediaIndexEpisodes(numId).then((eps) => {
         if (eps && eps.length > 0) {
-          const mapped: Episode[] = eps.map((e: any) => ({
-            id: `${anime.id}-ep-${e.number}`,
-            number: e.number,
-            title: e.title || `Episode ${e.number}`,
-            durationSec: (e.length || e.runtime || anime.durationMins || 24) * 60,
-            thumbnail: e.image || e.still || anime.bannerImage || anime.posterImage,
-            videoUrl: '',
-            synopsis: e.description || e.overview,
-            airedDate: e.airDate || e.air_date
-          }));
+          const mapped: Episode[] = eps.map((e: any) => {
+            const airedDate = e.airDate || e.air_date;
+            const isUnreleased = !!(airedDate && new Date(airedDate).getTime() > Date.now());
+            return {
+              id: `${anime.id}-ep-${e.number}`,
+              number: e.number,
+              title: e.title || `Episode ${e.number}`,
+              durationSec: e.length ? e.length * 60 : (e.runtime ? e.runtime * 60 : 0),
+              thumbnail: isUnreleased ? '' : (e.image || e.still || anime.bannerImage || anime.posterImage),
+              videoUrl: '',
+              synopsis: e.description || e.overview,
+              airedDate,
+              isUnreleased
+            };
+          });
           setRealEpisodes(mapped);
         }
       });
@@ -91,9 +114,17 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
   const statusList: WatchStatus[] = ['Watching', 'Plan to watch', 'Completed', 'Paused', 'Rewatching', 'Dropped'];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl text-white animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white animate-fadeIn font-sans">
+      {/* Toast alert for unreleased episodes */}
+      {toastMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/90 border border-[#74cf66]/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
+          <Clock className="w-4 h-4 text-[#74cf66]" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       {/* Top Navbar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/70 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/80 backdrop-blur-xl border-b border-white/10">
         <button
           onClick={onClose}
           className="p-2 -ml-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -108,7 +139,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
 
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => alert(`Share link for ${anime.title} copied!`)}
+            onClick={() => showToast(`Share link copied for ${anime.title}!`)}
             className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
             title="Share"
           >
@@ -119,13 +150,13 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Hero Poster Banner */}
-        <div className="relative rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[21/9] border border-purple-500/30 shadow-2xl">
+        <div className="relative rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[21/9] border border-[#74cf66]/30 shadow-2xl">
           <img
             src={anime.bannerImage || anime.posterImage}
             alt={anime.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0e0c17] via-[#0e0c17]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
           {/* Quick Zoom Poster */}
           <div className="absolute bottom-4 left-4 flex items-end gap-4">
@@ -141,7 +172,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
             </div>
 
             <div className="space-y-1 mb-1">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-600/60 border border-purple-400/40 text-purple-200">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#74cf66]/20 border border-[#74cf66]/40 text-[#74cf66]">
                 {anime.studio}
               </span>
               <h1 className="text-xl sm:text-3xl font-black text-white">{anime.title}</h1>
@@ -158,14 +189,14 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           <div className="relative">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-purple-600/30 hover:bg-purple-600/40 border border-purple-500/50 text-xs sm:text-sm font-semibold text-purple-200 transition-all cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#74cf66]/20 hover:bg-[#74cf66]/30 border border-[#74cf66]/40 text-xs sm:text-sm font-semibold text-[#74cf66] transition-all cursor-pointer shadow-md"
             >
               <span>{watchStatus}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-purple-300" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#74cf66]" />
             </button>
 
             {isStatusDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 rounded-2xl bg-[#14121e] border border-purple-500/40 p-1.5 shadow-2xl z-30 space-y-1">
+              <div className="absolute top-full left-0 mt-2 w-48 rounded-2xl bg-[#0e0c18] border border-[#74cf66]/40 p-1.5 shadow-2xl z-30 space-y-1">
                 {statusList.map((st) => (
                   <button
                     key={st}
@@ -174,11 +205,11 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                       setIsStatusDropdownOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left transition-colors cursor-pointer ${
-                      watchStatus === st ? 'bg-purple-600 text-white' : 'hover:bg-white/10 text-zinc-300'
+                      watchStatus === st ? 'bg-[#74cf66] text-black font-bold' : 'hover:bg-white/10 text-zinc-300'
                     }`}
                   >
                     <span>{st}</span>
-                    {watchStatus === st && <Check className="w-3.5 h-3.5 text-white" />}
+                    {watchStatus === st && <Check className="w-3.5 h-3.5 text-black" />}
                   </button>
                 ))}
               </div>
@@ -192,7 +223,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
             title="Toggle watched"
           >
             {watchedEpisodes[currentEpNum] ? (
-              <Eye className="w-4 h-4 text-purple-400" />
+              <Eye className="w-4 h-4 text-[#74cf66]" />
             ) : (
               <EyeOff className="w-4 h-4" />
             )}
@@ -204,9 +235,9 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               onClose();
               playAnimeEpisode(anime, currentEpNum);
             }}
-            className="flex-1 min-w-[160px] flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-purple-600/30 cursor-pointer"
+            className="flex-1 min-w-[160px] flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs sm:text-sm transition-all shadow-lg shadow-[rgba(116,207,102,0.3)] cursor-pointer"
           >
-            <Play className="w-4 h-4 fill-white" />
+            <Play className="w-4 h-4 fill-black" />
             <span>Continue {currentEpNum}</span>
           </button>
         </div>
@@ -215,11 +246,11 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
             <span>Episode {currentEpNum} of {allEpisodes.length}</span>
-            <span className="text-purple-400">{progressPercent}%</span>
+            <span className="text-[#74cf66]">{progressPercent}%</span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full bg-purple-500 rounded-full transition-all duration-300"
+              className="h-full bg-[#74cf66] rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -235,7 +266,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                 onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                    ? 'bg-[#74cf66] text-black shadow-md shadow-[rgba(116,207,102,0.3)]'
                     : 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white'
                 }`}
               >
@@ -248,17 +279,17 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
         {/* TAB 1: HOME */}
         {activeTab === 'Home' && (
           <div className="space-y-6 animate-fadeIn">
-            {/* 3 Metric Cards matching screenshot */}
+            {/* 3 Metric Cards */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-center">
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center">
                 <div className="font-bold text-sm sm:text-base text-white">{anime.status}</div>
                 <div className="text-[11px] text-zinc-400 uppercase tracking-wider mt-0.5">Status</div>
               </div>
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-center">
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center">
                 <div className="font-bold text-sm sm:text-base text-white">{anime.format}</div>
                 <div className="text-[11px] text-zinc-400 uppercase tracking-wider mt-0.5">Format</div>
               </div>
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-center">
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center">
                 <div className="font-bold text-sm sm:text-base text-white">{anime.year}</div>
                 <div className="text-[11px] text-zinc-400 uppercase tracking-wider mt-0.5">Year</div>
               </div>
@@ -269,7 +300,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               {anime.genres.map((g) => (
                 <span
                   key={g}
-                  className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-purple-500/20 text-xs font-medium text-zinc-300"
+                  className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-[#74cf66]/20 text-xs font-medium text-zinc-300"
                 >
                   {g}
                 </span>
@@ -284,23 +315,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </p>
               <button
                 onClick={() => setIsOverviewExpanded(!isOverviewExpanded)}
-                className="text-xs font-semibold text-purple-400 hover:text-purple-300 cursor-pointer"
+                className="text-xs font-semibold text-[#74cf66] hover:underline cursor-pointer"
               >
                 {isOverviewExpanded ? 'Show less' : 'More'}
               </button>
-            </div>
-
-            {/* Trailer preview */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">Trailer</h3>
-              <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg group">
-                <video
-                  src={anime.trailerUrl || anime.seasons[0]?.episodes[0]?.videoUrl}
-                  poster={anime.bannerImage || anime.posterImage}
-                  controls
-                  className="w-full h-full object-cover"
-                />
-              </div>
             </div>
 
             {/* Details info table */}
@@ -332,7 +350,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   onClick={() => setSelectedSeasonIdx(idx)}
                   className={`px-4 py-2 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
                     selectedSeasonIdx === idx
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                      ? 'bg-[#74cf66] text-black shadow-md shadow-[rgba(116,207,102,0.3)]'
                       : 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/5'
                   }`}
                 >
@@ -342,7 +360,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               ))}
             </div>
 
-            {/* Episode Filter Bar matching screenshot 220455 */}
+            {/* Episode Filter Bar */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[200px]">
                 <input
@@ -350,7 +368,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   value={episodeSearch}
                   onChange={(e) => setEpisodeSearch(e.target.value)}
                   placeholder="Filter episodes..."
-                  className="w-full pl-9 pr-3 py-2 rounded-2xl bg-black/40 border border-purple-500/20 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-400"
+                  className="w-full pl-9 pr-3 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#74cf66]"
                 />
                 <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -359,7 +377,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                 onClick={() => setSortOldest(!sortOldest)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 font-medium transition-colors cursor-pointer"
               >
-                <ArrowUpDown className="w-3.5 h-3.5 text-purple-400" />
+                <ArrowUpDown className="w-3.5 h-3.5 text-[#74cf66]" />
                 <span>{sortOldest ? 'Oldest' : 'Newest'}</span>
               </button>
 
@@ -372,8 +390,8 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </button>
 
               <button
-                onClick={() => alert(`Downloading all ${allEpisodes.length} episodes for offline viewing!`)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-purple-300 font-medium transition-colors cursor-pointer"
+                onClick={() => showToast(`Downloading all ${allEpisodes.length} episodes...`)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-[#74cf66] font-medium transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download</span>
@@ -389,73 +407,112 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               <div className={isGridView ? 'grid grid-cols-2 sm:grid-cols-3 gap-3' : 'space-y-2'}>
                 {filteredEpisodes.map((ep) => {
                   const isEpWatched = !!watchedEpisodes[ep.number];
+                  const unreleased = isEpisodeUnreleased(ep);
+
+                  // Calculate display duration without hardcoding "24 min"
+                  const durationDisplay = ep.durationSec && ep.durationSec > 0
+                    ? `${Math.round(ep.durationSec / 60)}m`
+                    : (ep.airedDate ? ep.airedDate : '');
+
                   return (
                     <div
                       key={ep.id}
                       onClick={() => {
+                        if (unreleased) {
+                          showToast(`Episode ${ep.number} has not aired yet!`);
+                          return;
+                        }
                         onClose();
                         playAnimeEpisode(anime, ep.number);
                       }}
                       className={`group flex ${
                         isGridView ? 'flex-col' : 'items-center'
-                      } justify-between gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:bg-white/10 transition-all cursor-pointer`}
+                      } justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                        unreleased
+                          ? 'bg-white/[0.02] border-white/5 opacity-60 hover:opacity-75'
+                          : 'bg-white/5 border-white/10 hover:border-[#74cf66]/40 hover:bg-white/10'
+                      }`}
                     >
                       <div className={`flex ${isGridView ? 'flex-col' : 'items-center'} gap-3 flex-1 min-w-0`}>
-                        {/* Thumbnail */}
-                        <div className="relative aspect-video w-full sm:w-36 rounded-xl overflow-hidden shrink-0 bg-black/60">
-                          <img
-                            src={ep.thumbnail || anime.posterImage}
-                            alt={ep.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                          <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-sm text-[10px] font-bold text-white">
+                        {/* Thumbnail or Unreleased Slate */}
+                        <div className="relative aspect-video w-full sm:w-36 rounded-xl overflow-hidden shrink-0 bg-zinc-900 flex items-center justify-center">
+                          {unreleased ? (
+                            <div className="flex flex-col items-center justify-center text-zinc-500 p-2 text-center space-y-1">
+                              <Lock className="w-5 h-5 text-zinc-500" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">Unreleased</span>
+                            </div>
+                          ) : (
+                            <img
+                              src={ep.thumbnail || anime.posterImage}
+                              alt={ep.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = anime.posterImage;
+                              }}
+                            />
+                          )}
+
+                          <span className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            unreleased ? 'bg-zinc-800/90 text-zinc-400' : 'bg-black/80 text-white'
+                          }`}>
                             EP {ep.number}
                           </span>
-                          {/* Watched progress bar if episode was started */}
-                          {isEpWatched && (
-                            <div className="absolute bottom-0 inset-x-0 h-1 bg-purple-500" />
+
+                          {/* Watched progress bar */}
+                          {isEpWatched && !unreleased && (
+                            <div className="absolute bottom-0 inset-x-0 h-1 bg-[#74cf66]" />
                           )}
                         </div>
 
-                        {/* Title & subtitle */}
+                        {/* Title & metadata */}
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-sm text-white truncate group-hover:text-purple-300 transition-colors">
+                          <h4 className={`font-semibold text-sm truncate ${
+                            unreleased ? 'text-zinc-400' : 'text-white group-hover:text-[#74cf66] transition-colors'
+                          }`}>
                             {ep.title}
                           </h4>
                           <p className="text-xs text-zinc-400 mt-0.5">
-                            Episode {ep.number} • {ep.airedDate || '24 min'}
+                            {unreleased ? (
+                              <span className="text-[#74cf66]/80 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3 inline" /> Airing {ep.airedDate || 'Soon'}
+                              </span>
+                            ) : (
+                              <>Episode {ep.number} {durationDisplay ? `• ${durationDisplay}` : ''}</>
+                            )}
                           </p>
                         </div>
                       </div>
 
                       {/* Right icons */}
-                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleEpisodeWatched(ep.number);
-                          }}
-                          className={`p-2 rounded-full hover:bg-white/10 transition-colors ${
-                            isEpWatched ? 'text-purple-400' : 'text-zinc-500 hover:text-white'
-                          }`}
-                          title={isEpWatched ? 'Mark as unwatched' : 'Mark as watched'}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                      {!unreleased && (
+                        <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleEpisodeWatched(ep.number);
+                            }}
+                            className={`p-2 rounded-full hover:bg-white/10 transition-colors ${
+                              isEpWatched ? 'text-[#74cf66]' : 'text-zinc-500 hover:text-white'
+                            }`}
+                            title={isEpWatched ? 'Mark as unwatched' : 'Mark as watched'}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            alert(`Downloading Episode ${ep.number} (${ep.title}) for offline play!`);
-                          }}
-                          className="p-2 rounded-full hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"
-                          title="Download episode"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              showToast(`Downloading Episode ${ep.number}...`);
+                            }}
+                            className="p-2 rounded-full hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"
+                            title="Download episode"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -471,9 +528,9 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
             <div className="space-y-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">Seasons</h3>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-purple-900/30 border border-purple-500/50">
+                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#74cf66]/10 border border-[#74cf66]/40">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs">
+                    <div className="w-7 h-7 rounded-full bg-[#74cf66] text-black font-bold flex items-center justify-center text-xs">
                       1
                     </div>
                     <img
@@ -484,10 +541,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                     <div>
                       <h4 className="font-semibold text-sm text-white">{anime.title}</h4>
                       <p className="text-xs text-zinc-400">Season 1 • {anime.year} • {allEpisodes.length} eps</p>
-                      <span className="text-[11px] text-purple-400 font-semibold">You are here</span>
+                      <span className="text-[11px] text-[#74cf66] font-semibold">Current Season</span>
                     </div>
                   </div>
-                  <Play className="w-4 h-4 fill-purple-400 text-purple-400" />
+                  <Play className="w-4 h-4 fill-[#74cf66] text-[#74cf66]" />
                 </div>
 
                 {anime.related
@@ -495,8 +552,8 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   .map((rel, idx) => (
                     <div
                       key={rel.id}
-                      onClick={() => alert(`Opening ${rel.title}`)}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-all hover:bg-white/10 cursor-pointer"
+                      onClick={() => showToast(`Opening ${rel.title}`)}
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-[#74cf66]/30 transition-all hover:bg-white/10 cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-full bg-white/10 text-zinc-400 font-bold flex items-center justify-center text-xs">
@@ -527,8 +584,8 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   .map((rel) => (
                     <div
                       key={rel.id}
-                      onClick={() => alert(`Opening recommendations for ${rel.title}`)}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-all hover:bg-white/10 cursor-pointer"
+                      onClick={() => showToast(`Opening ${rel.title}`)}
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-[#74cf66]/30 transition-all hover:bg-white/10 cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <img
@@ -552,3 +609,4 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     </div>
   );
 };
+

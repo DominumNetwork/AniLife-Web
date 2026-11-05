@@ -61,9 +61,9 @@ export const MyListView: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
       {/* Profile & Sync Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-black/50 border border-purple-500/20 backdrop-blur-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-black/50 border border-[#74cf66]/20 backdrop-blur-xl">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-400 p-0.5 shrink-0 bg-purple-900/40">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#74cf66] p-0.5 shrink-0 bg-black/60">
             <img
               src={currentUser?.avatar?.large || activeProfile.avatar}
               alt={currentUser?.name || activeProfile.name}
@@ -71,7 +71,7 @@ export const MyListView: React.FC = () => {
             />
           </div>
           <div>
-            <span className="text-[11px] font-bold tracking-widest text-purple-400 uppercase">
+            <span className="text-[11px] font-bold tracking-widest text-[#74cf66] uppercase">
               My Library
             </span>
             <div>
@@ -108,14 +108,14 @@ export const MyListView: React.FC = () => {
               onClick={() => setShowStatsModal(true)}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs text-zinc-200 font-medium transition-colors cursor-pointer"
             >
-              <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
+              <BarChart3 className="w-3.5 h-3.5 text-[#74cf66]" />
               <span>Stats</span>
             </button>
           )}
 
           <button
             onClick={() => setShowAuthModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs text-purple-300 font-medium transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs text-[#74cf66] font-medium transition-colors cursor-pointer"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>{currentUser ? 'AniList Account' : 'Sign In'}</span>
@@ -124,7 +124,7 @@ export const MyListView: React.FC = () => {
           <button
             onClick={syncAniList}
             disabled={isSyncingAniList}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-purple-600/40 hover:bg-purple-600/60 border border-purple-500/50 text-xs text-purple-200 font-medium transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-xs text-black font-bold transition-colors cursor-pointer disabled:opacity-50"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${isSyncingAniList ? 'animate-spin' : ''}`} />
             <span>{isSyncingAniList ? 'Syncing...' : 'Sync'}</span>
@@ -134,19 +134,19 @@ export const MyListView: React.FC = () => {
 
       {/* Hero Sign In Callout if not authenticated */}
       {!currentUser && (
-        <div className="p-5 rounded-3xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-black/60 border border-purple-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-5 rounded-3xl bg-black/60 border border-[#74cf66]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-[#74cf66]" />
               <span>Connect your AniList Account</span>
             </h3>
             <p className="text-xs text-zinc-300 max-w-xl">
-              Sign in with your AniList client (ID: 55798) to enable real-time bidirectional syncing of your watching lists, episode progress, and ratings.
+              Sign in with your AniList account to enable real-time bidirectional syncing of your watching lists, episode progress, and ratings.
             </p>
           </div>
           <button
             onClick={() => setShowAuthModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-xs shadow-lg shadow-[rgba(116,207,102,0.3)] transition-all cursor-pointer whitespace-nowrap"
           >
             <LogIn className="w-4 h-4" />
             <span>Sign In to AniList</span>
@@ -164,7 +164,7 @@ export const MyListView: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                  ? 'bg-[#74cf66] text-black shadow-md shadow-[rgba(116,207,102,0.3)]'
                   : 'bg-white/5 hover:bg-white/10 text-zinc-300'
               }`}
             >
@@ -175,7 +175,7 @@ export const MyListView: React.FC = () => {
 
         <button
           onClick={() => alert('Custom anime list creation.')}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs text-purple-300 font-medium transition-colors cursor-pointer whitespace-nowrap ml-auto"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs text-[#74cf66] font-medium transition-colors cursor-pointer whitespace-nowrap ml-auto"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>New list</span>
@@ -187,7 +187,7 @@ export const MyListView: React.FC = () => {
         <select
           value={selectedFormat}
           onChange={(e) => setSelectedFormat(e.target.value)}
-          className="px-3.5 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-300 focus:outline-none focus:border-purple-400 cursor-pointer"
+          className="px-3.5 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-300 focus:outline-none focus:border-[#74cf66] cursor-pointer"
         >
           <option value="Any format" className="bg-[#14121e]">Any format</option>
           <option value="TV" className="bg-[#14121e]">TV</option>
@@ -201,7 +201,7 @@ export const MyListView: React.FC = () => {
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
             placeholder="Filter by title..."
-            className="w-full pl-8 pr-3 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-400"
+            className="w-full pl-8 pr-3 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#74cf66]"
           />
           <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -226,7 +226,7 @@ export const MyListView: React.FC = () => {
               onClick={() => setSelectedAnime(anime)}
               className="group cursor-pointer space-y-2 relative"
             >
-              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-900/30 bg-zinc-900">
+              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-[#74cf66]/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[rgba(116,207,102,0.2)] bg-zinc-900">
                 <img
                   src={anime.posterImage}
                   alt={anime.title}
@@ -238,7 +238,7 @@ export const MyListView: React.FC = () => {
                 />
 
                 {/* Status badge */}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-[10px] font-bold text-purple-300 border border-purple-500/30">
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-[10px] font-bold text-[#74cf66] border border-[#74cf66]/30">
                   {entry.status}
                 </div>
 
@@ -257,14 +257,14 @@ export const MyListView: React.FC = () => {
                   }}
                   className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                 >
-                  <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg">
-                    <Play className="w-5 h-5 fill-white ml-0.5" />
+                  <div className="w-10 h-10 rounded-full bg-[#74cf66] text-black flex items-center justify-center shadow-lg">
+                    <Play className="w-5 h-5 fill-black ml-0.5" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold text-xs sm:text-sm text-white line-clamp-1 group-hover:text-purple-300 transition-colors">
+                <h3 className="font-semibold text-xs sm:text-sm text-white line-clamp-1 group-hover:text-[#74cf66] transition-colors">
                   {anime.title}
                 </h3>
                 <p className="text-[11px] text-zinc-400 line-clamp-1">
@@ -278,13 +278,13 @@ export const MyListView: React.FC = () => {
 
       {/* Stats Modal */}
       {showStatsModal && userStats && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md bg-[#14121e] border border-purple-500/30 rounded-3xl p-6 shadow-2xl text-white space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn font-sans">
+          <div className="w-full max-w-md bg-[#0e0c18] border border-[#74cf66]/30 rounded-3xl p-6 shadow-2xl text-white space-y-4">
             <h3 className="text-lg font-bold">AniList Profile & Stats</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
                 <div className="text-xs text-zinc-400">Total Anime</div>
-                <div className="text-2xl font-bold text-purple-400">
+                <div className="text-2xl font-bold text-[#74cf66]">
                   {userStats.count}
                 </div>
               </div>
@@ -309,7 +309,7 @@ export const MyListView: React.FC = () => {
             </div>
             <button
               onClick={() => setShowStatsModal(false)}
-              className="w-full py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 font-medium text-sm transition-colors text-center cursor-pointer"
+              className="w-full py-2.5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black font-bold text-sm transition-colors text-center cursor-pointer"
             >
               Close
             </button>

@@ -163,7 +163,10 @@ async function scrapeMediaIndexLili(
 ): Promise<ResolvedStreamSource | null> {
   try {
     const shard = calculateMediaIndexShard(anilistId);
-    let res = await fetch(`https://cdn.jsdelivr.net/gh/anilifecommunity/media-index@main/data/anime/${shard}/${anilistId}/lili.json`);
+    let res = await fetch(`https://raw.githubusercontent.com/anilifecommunity/media-index/main/data/anime/${shard}/${anilistId}/lili.json`);
+    if (!res.ok) {
+      res = await fetch(`https://raw.githubusercontent.com/sanilili/media-index/main/data/anime/${shard}/${anilistId}/lili.json`);
+    }
     if (!res.ok) {
       res = await fetch(`https://cdn.jsdelivr.net/gh/sanilili/media-index@main/data/anime/${shard}/${anilistId}/lili.json`);
     }

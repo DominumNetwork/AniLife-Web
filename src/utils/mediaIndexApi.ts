@@ -3,9 +3,14 @@ export interface MediaIndexEpisode {
   number: number;
   title: string;
   image?: string;
+  still?: string;
   airDate?: string;
+  air_date?: string;
   description?: string;
+  overview?: string;
   length?: number;
+  runtime?: number;
+  rating?: number;
   skipId?: string;
 }
 
@@ -22,18 +27,20 @@ export interface MediaIndexSkipData {
   recap?: [number, number];
 }
 
-const MEDIA_INDEX_PRIMARY = 'https://cdn.jsdelivr.net/gh/anilifecommunity/media-index@main/data';
-const MEDIA_INDEX_FALLBACK = 'https://cdn.jsdelivr.net/gh/sanilili/media-index@main/data';
+const MEDIA_INDEX_PRIMARY = 'https://cdn.jsdelivr.net/gh/anilifecommunity/media-index@main/main/data';
+const MEDIA_INDEX_FALLBACK = 'https://cdn.jsdelivr.net/gh/immafurryfemboy/fish@main/data';
 
 async function fetchIndexJson<T>(subpath: string): Promise<T | null> {
-  try {
-    const res = await fetch(`${MEDIA_INDEX_PRIMARY}/${subpath}`);
-    if (res.ok) return await res.json();
-  } catch {}
-  try {
-    const res = await fetch(`${MEDIA_INDEX_FALLBACK}/${subpath}`);
-    if (res.ok) return await res.json();
-  } catch {}
+  const sources = [
+    `${MEDIA_INDEX_PRIMARY}/${subpath}`,
+    `${MEDIA_INDEX_FALLBACK}/${subpath}`
+  ];
+  for (const url of sources) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return await res.json();
+    } catch {}
+  }
   return null;
 }
 

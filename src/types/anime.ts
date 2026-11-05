@@ -6,6 +6,7 @@ export interface Episode {
   thumbnail: string;
   videoUrl: string;
   isFiller?: boolean;
+  isUnreleased?: boolean;
   airedDate?: string;
   synopsis?: string;
 }
