@@ -999,8 +999,8 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           {/* 8. ABOUT                                                 */}
           {/* ======================================================== */}
           {activeSection === 'about' && (
-            <div className="space-y-4 animate-fadeIn text-xs">
-              <div className="p-5 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-3">
+            <div className="space-y-5 animate-fadeIn text-xs">
+              <div className="p-5 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
                 <div className="flex items-center gap-3.5">
                   <img
                     src="/assets/images/Anilife-Logo.png"
@@ -1009,15 +1009,54 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   />
                   <div>
                     <h3 className="text-base font-black text-white tracking-wide">AniLife</h3>
-                    <p className="text-xs text-[#74cf66]">Version 3.0.0 • Desktop & Web Edition</p>
+                    <p className="text-xs text-[#74cf66]">Version 3.0.0 • Community Edition</p>
                   </div>
                 </div>
-                <p className="text-zinc-300 leading-relaxed text-xs">
-                  AniLife is an anime streaming client with AniList GraphQL sync, Discord Rich Presence, and community media-index streaming sources.
-                </p>
+
+                <div className="space-y-3 text-zinc-300 leading-relaxed text-xs pt-2 border-t border-white/10">
+                  <p>
+                    Anilife is a community-driven anime platform built to make watching anime simple and enjoyable. It discovers episodes across multiple sources, remembers where you left off, and keeps your anime library synchronised with AniList and MyAnimeList.
+                  </p>
+                  <p>
+                    No unnecessary ads, no account required. Just anime, the way it should be.
+                  </p>
+                  <p className="text-[#74cf66] font-semibold pt-1">
+                    ♡ Built with passion by the Anilife Team
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-2">
+              {/* App Releases & Downloads (Android, TV, Desktop, iOS, Mac, Linux) */}
+              <div className="space-y-3">
+                <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  OFFICIAL APP DOWNLOADS
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { name: 'Android APK', desc: 'Mobile & Tablet App', badge: 'Coming Soon' },
+                    { name: 'Android TV', desc: 'Smart TV Edition', badge: 'Coming Soon' },
+                    { name: 'Desktop (Windows)', desc: 'Standalone App', badge: 'Coming Soon' },
+                    { name: 'iOS App', desc: 'iPhone & iPad', badge: 'Coming Soon' },
+                    { name: 'macOS', desc: 'Apple Silicon & Intel', badge: 'Coming Soon' },
+                    { name: 'Linux', desc: 'AppImage & Flatpak', badge: 'Coming Soon' },
+                  ].map((app) => (
+                    <div
+                      key={app.name}
+                      className="p-3.5 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="font-bold text-white text-xs">{app.name}</div>
+                        <div className="text-[10px] text-zinc-400">{app.desc}</div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 text-[10px] font-semibold">
+                        {app.badge}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
                 <a
                   href="https://github.com/anilifecommunity/media-index"
                   target="_blank"
