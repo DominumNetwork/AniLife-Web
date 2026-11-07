@@ -390,6 +390,30 @@ app.post('/api/anilist/token', async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/anilist/proxy - Proxy AniList GraphQL requests to bypass browser CORS
+app.post('/api/anilist/proxy', async (req: Request, res: Response) => {
+  const { query, variables, token } = req.body;
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query, variables })
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ errors: [{ message: msg }] });
+  }
+});
+
 // POST /api/discord/presence - Rich presence helper calling Python microservice
 app.post('/api/discord/presence', async (req: Request, res: Response) => {
   const { title = 'Anime', episode = '1' } = req.body;

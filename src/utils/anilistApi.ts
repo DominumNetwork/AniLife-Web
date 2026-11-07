@@ -104,19 +104,13 @@ export async function queryAniList<T>(
   variables: Record<string, any> = {},
   token?: string | null
 ): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(ANILIST_ENDPOINT, {
+  const response = await fetch('/api/anilist/proxy', {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ query, variables }),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ query, variables, token }),
   });
 
   if (!response.ok) {
