@@ -332,11 +332,11 @@ app.get('/api/sources', async (req: Request, res: Response) => {
     // Bulletproof Fallback Stream so servers never say "stream unavailable"
     const fallbackSource: ResolvedStreamSource = {
       provider: provider === 'auto' ? 'zoko' : provider,
-      streamUrl: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv/bipbop_16x9_variant.m3u8',
+      streamUrl: 'https://test-streams.mux.dev/big_buck_bunny/bbb_720p.m3u8',
       quality: '1080p',
       format: 'hls',
       audio,
-      referer: 'https://apple.com',
+      referer: 'https://mux.com',
       subtitles: [
         { language: 'en', label: 'English (Default)', url: '', default: true }
       ]

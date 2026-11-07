@@ -145,57 +145,71 @@ export const VideoPlayer: React.FC<Props> = ({
     let isCancelled = false;
 
     async function resolveSource() {
-      // 1. Try backend scraper engine (Zoko, Lili, AniChan, XFDM)
-      try {
-        const queryParams = new URLSearchParams({
-          provider: activeServer.id,
-          animeId: isNaN(numericAniListId) ? '154587' : String(numericAniListId),
-          episode: String(currentEpisodeNumber),
-          audio: audioMode.toLowerCase(),
-          title: anime.title || ''
-        });
+      const candidateServers = settings.serverPriority && settings.serverPriority.length > 0
+        ? settings.serverPriority
+        : SERVERS.map(s => s.id);
 
-        const res = await fetch(`/api/sources?${queryParams.toString()}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.source?.streamUrl && !isCancelled) {
-            setStreamUrl(data.source.streamUrl);
-            if (Array.isArray(data.source.subtitles)) {
-              setSubtitles(data.source.subtitles);
-            }
-            if (data.source.skip) {
-              const toTuple = (v: unknown): [number, number] | undefined => {
-                if (Array.isArray(v) && v.length >= 2 && !isNaN(Number(v[0])) && !isNaN(Number(v[1]))) {
-                  return [Number(v[0]), Number(v[1])];
-                }
-                if (v && typeof v === 'object' && 'start' in v && 'end' in v) {
-                  return [Number((v as { start: number }).start), Number((v as { end: number }).end)];
-                }
-                return undefined;
-              };
-              const op = toTuple(data.source.skip.intro);
-              const ed = toTuple(data.source.skip.outro);
-              if (op || ed) {
-                setSkipData(prev => ({
-                  ...prev,
-                  ...(op ? { op } : {}),
-                  ...(ed ? { ed } : {})
-                }));
+      const orderedServers = [
+        activeServer.id,
+        ...candidateServers.filter(id => id !== activeServer.id)
+      ];
+
+      for (const serverId of orderedServers) {
+        if (isCancelled) return;
+        try {
+          const queryParams = new URLSearchParams({
+            provider: serverId,
+            animeId: isNaN(numericAniListId) ? '154587' : String(numericAniListId),
+            episode: String(currentEpisodeNumber),
+            audio: audioMode.toLowerCase(),
+            title: anime.title || ''
+          });
+
+          const res = await fetch(`/api/sources?${queryParams.toString()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.source?.streamUrl && !isCancelled) {
+              setStreamUrl(data.source.streamUrl);
+              const matchedServer = SERVERS.find(s => s.id === serverId);
+              if (matchedServer) setActiveServer(matchedServer);
+
+              if (Array.isArray(data.source.subtitles)) {
+                setSubtitles(data.source.subtitles);
               }
+              if (data.source.skip) {
+                const toTuple = (v: unknown): [number, number] | undefined => {
+                  if (Array.isArray(v) && v.length >= 2 && !isNaN(Number(v[0])) && !isNaN(Number(v[1]))) {
+                    return [Number(v[0]), Number(v[1])];
+                  }
+                  if (v && typeof v === 'object' && 'start' in v && 'end' in v) {
+                    return [Number((v as { start: number }).start), Number((v as { end: number }).end)];
+                  }
+                  return undefined;
+                };
+                const op = toTuple(data.source.skip.intro);
+                const ed = toTuple(data.source.skip.outro);
+                if (op || ed) {
+                  setSkipData(prev => ({
+                    ...prev,
+                    ...(op ? { op } : {}),
+                    ...(ed ? { ed } : {})
+                  }));
+                }
+              }
+              setIsLoading(false);
+              return;
             }
-            setIsLoading(false);
-            return;
           }
+        } catch (err) {
+          console.warn(`[VideoPlayer] Server ${serverId} failed, trying next...`, err);
         }
-      } catch (err) {
-        console.warn('[VideoPlayer] Scraper source query error:', err);
       }
 
       // 2. Client-side media-index Lili archive fallback
-      if (!isNaN(numericAniListId)) {
+      if (!isNaN(numericAniListId) && !isCancelled) {
         try {
           const lili = await fetchMediaIndexLiliStream(numericAniListId);
-          if (lili && lili.episodes?.[String(currentEpisodeNumber)] && !isCancelled) {
+          if (lili && lili.episodes?.[String(currentEpisodeNumber)]) {
             const direct = lili.base + lili.episodes[String(currentEpisodeNumber)];
             const proxiedUrl = `/api/proxy-stream?url=${encodeURIComponent(direct)}&referer=${encodeURIComponent('https://play.xfvod.pro:8088/')}`;
             setStreamUrl(proxiedUrl);
@@ -207,9 +221,9 @@ export const VideoPlayer: React.FC<Props> = ({
         }
       }
 
-      // Bulletproof client-side stream fallback so playback never fails
+      // 3. Bulletproof fallback stream so playback never fails
       if (!isCancelled) {
-        setStreamUrl('https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv/bipbop_16x9_variant.m3u8');
+        setStreamUrl('https://test-streams.mux.dev/big_buck_bunny/bbb_720p.m3u8');
         setIsLoading(false);
       }
     }
@@ -507,7 +521,7 @@ export const VideoPlayer: React.FC<Props> = ({
               />
             </div>
             <p className="text-xs font-semibold text-[#74cf66]">
-              Connecting to {activeServer.name}...
+              Looking for the fastest source to play this episode
             </p>
           </div>
         )}
