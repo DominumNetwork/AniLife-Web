@@ -36,7 +36,7 @@ export const HomeFeed: React.FC = () => {
   const [isContinueExpanded, setIsContinueExpanded] = useState(false);
   const [contextItem, setContextItem] = useState<{ anime: Anime; episodeNumber: number } | null>(null);
 
-  // Dynamic spotlight list directly from AniList
+  
   const spotlightAnimeList =
     spotlightAnime.length > 0
       ? spotlightAnime
@@ -44,7 +44,7 @@ export const HomeFeed: React.FC = () => {
 
   const currentSpotlight = spotlightAnimeList[activeSpotlightIdx] || liveCatalog[0];
 
-  // Resolve Continue Watching items with full anime metadata
+  
   const resolvedContinueItems = continueWatching
     .map(entry => {
       const anime = liveCatalog.find(a => a.id === entry.animeId);
@@ -52,17 +52,17 @@ export const HomeFeed: React.FC = () => {
     })
     .filter(Boolean) as { entry: ContinueWatchingEntry; anime: Anime }[];
 
-  // Dynamic rows from real AniList data
+  
   const forYouList = topRatedAnime.length > 0 ? topRatedAnime.slice(0, 10) : liveCatalog.slice(4, 12);
   const trendingList = trendingAnime.length > 0 ? trendingAnime : liveCatalog.slice(0, 12);
   const seasonList = popularSeasonAnime.length > 0 ? popularSeasonAnime : liveCatalog.slice(8, 20);
 
   return (
     <div className="space-y-8 pb-20 animate-fadeIn">
-      {/* Spotlight Featured Banner */}
+      {}
       {currentSpotlight && (
         <section className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden min-h-[380px] sm:min-h-[480px] flex items-end p-5 sm:p-10 border border-[#74cf66]/20 shadow-2xl group">
-          {/* Backdrop Image with gradient overlay */}
+          {}
           <div
             className="absolute inset-0 bg-cover bg-center transition-all duration-700 transform scale-100 group-hover:scale-102"
             style={{
@@ -73,7 +73,7 @@ export const HomeFeed: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
           </div>
 
-          {/* Content */}
+          {}
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-3.5 bg-[#74cf66] rounded-full inline-block" />
@@ -91,7 +91,7 @@ export const HomeFeed: React.FC = () => {
               {currentSpotlight.title}
             </h1>
 
-            {/* Metadata badges */}
+            {}
             <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-medium text-zinc-300">
               <div className="flex items-center gap-1 text-[#74cf66] font-bold bg-[#74cf66]/15 px-2.5 py-0.5 rounded-full border border-[#74cf66]/30">
                 <Star className="w-3.5 h-3.5 fill-[#74cf66] text-[#74cf66]" />
@@ -111,7 +111,7 @@ export const HomeFeed: React.FC = () => {
               {currentSpotlight.synopsis}
             </p>
 
-            {/* Action Row */}
+            {}
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => playAnimeEpisode(currentSpotlight, 1)}
@@ -131,7 +131,7 @@ export const HomeFeed: React.FC = () => {
             </div>
           </div>
 
-          {/* Carousel indicators */}
+          {}
           <div className="absolute right-5 bottom-6 z-10 flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
             {spotlightAnimeList.map((_, i) => (
               <button
@@ -149,7 +149,7 @@ export const HomeFeed: React.FC = () => {
         </section>
       )}
 
-      {/* Continue Watching Section - Only shown when user has active watch history */}
+      {}
       {resolvedContinueItems.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -201,7 +201,7 @@ export const HomeFeed: React.FC = () => {
                   } h-36 rounded-2xl bg-zinc-900/90 border border-white/10 hover:border-[#74cf66] overflow-hidden transition-all duration-300 shadow-xl cursor-pointer`}
                   onClick={() => playAnimeEpisode(anime, entry.episodeNumber, entry.audioMode)}
                 >
-                  {/* Background Banner Image */}
+                  {}
                   <img
                     src={anime.bannerImage || anime.posterImage}
                     alt={anime.title}
@@ -212,7 +212,7 @@ export const HomeFeed: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
-                  {/* Top Buttons: (i) on left, (x) on right */}
+                  {}
                   <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
                     <button
                       onClick={(e) => {
@@ -237,14 +237,14 @@ export const HomeFeed: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Center Play Button on hover */}
+                  {}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-10 h-10 rounded-full bg-[#74cf66] text-black flex items-center justify-center shadow-lg shadow-[#74cf66]/40">
                       <Play className="w-4 h-4 fill-black ml-0.5" />
                     </div>
                   </div>
 
-                  {/* Bottom Info: Title, Subtitle, Progress Bar */}
+                  {}
                   <div className="absolute bottom-0 inset-x-0 p-3 space-y-1 z-10">
                     <h4 className="font-bold text-sm text-white truncate group-hover:text-[#74cf66] transition-colors">
                       {anime.title}
@@ -253,7 +253,7 @@ export const HomeFeed: React.FC = () => {
                       Episode {entry.episodeNumber} • {entry.audioMode || 'SUB'}
                     </p>
 
-                    {/* Progress Bar along bottom */}
+                    {}
                     <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mt-1">
                       <div
                         className="h-full bg-[#74cf66] rounded-full transition-all duration-300"
@@ -268,7 +268,7 @@ export const HomeFeed: React.FC = () => {
         </section>
       )}
 
-      {/* Row: Trending Now (Real Live AniList GraphQL) */}
+      {}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ export const HomeFeed: React.FC = () => {
         </div>
       </section>
 
-      {/* Row: Popular This Season */}
+      {}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -366,7 +366,7 @@ export const HomeFeed: React.FC = () => {
         </div>
       </section>
 
-      {/* Row: Top Rated of All Time */}
+      {}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -411,7 +411,7 @@ export const HomeFeed: React.FC = () => {
         </div>
       </section>
 
-      {/* Context Menu Modal if opened */}
+      {}
       {contextItem && (
         <ContinueContextMenu
           anime={contextItem.anime}

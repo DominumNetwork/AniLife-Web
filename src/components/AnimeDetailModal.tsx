@@ -49,7 +49,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  // Helper to check if an episode is unreleased
+  
   const isEpisodeUnreleased = (ep: Episode): boolean => {
     if ('isUnreleased' in ep && ep.isUnreleased) return true;
     if (ep.airedDate) {
@@ -61,7 +61,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
     return false;
   };
 
-  // Load real episodes from media-index CDN using universal AniList ID resolver
+  
   useEffect(() => {
     const numId = getAnimeAniListId(anime);
     if (numId) {
@@ -115,7 +115,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white animate-fadeIn font-sans">
-      {/* Toast alert for unreleased episodes */}
+      {}
       {toastMsg && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/90 border border-[#74cf66]/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
           <Clock className="w-4 h-4 text-[#74cf66]" />
@@ -123,7 +123,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
         </div>
       )}
 
-      {/* Top Navbar */}
+      {}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-3.5 bg-black/80 backdrop-blur-xl border-b border-white/10">
         <button
           onClick={onClose}
@@ -149,7 +149,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Hero Poster Banner */}
+        {}
         <div className="relative rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[21/9] border border-[#74cf66]/30 shadow-2xl">
           <img
             src={anime.bannerImage || anime.posterImage}
@@ -158,7 +158,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
-          {/* Quick Zoom Poster */}
+          {}
           <div className="absolute bottom-4 left-4 flex items-end gap-4">
             <div className="relative w-20 sm:w-28 aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white/20 shadow-xl shrink-0 group">
               <img
@@ -183,9 +183,9 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           </div>
         </div>
 
-        {/* Action Row: Status Pill, Watched Eye, ▶ Continue 3 */}
+        {}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Status Dropdown */}
+          {}
           <div className="relative">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
@@ -216,7 +216,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
             )}
           </div>
 
-          {/* Mark as watched eye */}
+          {}
           <button
             onClick={() => toggleEpisodeWatched(currentEpNum)}
             className="p-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -229,7 +229,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
             )}
           </button>
 
-          {/* ▶ Continue Button */}
+          {}
           <button
             onClick={() => {
               onClose();
@@ -242,7 +242,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           </button>
         </div>
 
-        {/* Progress bar */}
+        {}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
             <span>Episode {currentEpNum} of {allEpisodes.length}</span>
@@ -256,7 +256,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           </div>
         </div>
 
-        {/* Navigation Tabs: Home, Episodes, Related */}
+        {}
         <div className="flex items-center gap-2 border-b border-white/10 pb-3">
           {(['Home', 'Episodes', 'Related'] as const).map((tab) => {
             const isActive = activeTab === tab;
@@ -276,10 +276,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           })}
         </div>
 
-        {/* TAB 1: HOME */}
+        {}
         {activeTab === 'Home' && (
           <div className="space-y-6 animate-fadeIn">
-            {/* 3 Metric Cards */}
+            {}
             <div className="grid grid-cols-3 gap-3">
               <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center">
                 <div className="font-bold text-sm sm:text-base text-white">{anime.status}</div>
@@ -295,7 +295,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </div>
             </div>
 
-            {/* Genre Pills */}
+            {}
             <div className="flex flex-wrap gap-2">
               {anime.genres.map((g) => (
                 <span
@@ -307,7 +307,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               ))}
             </div>
 
-            {/* Overview */}
+            {}
             <div className="space-y-2">
               <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">Overview</h3>
               <p className={`text-sm text-zinc-300 leading-relaxed ${isOverviewExpanded ? '' : 'line-clamp-3'}`}>
@@ -321,7 +321,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </button>
             </div>
 
-            {/* Details info table */}
+            {}
             <div className="divide-y divide-white/10 text-xs sm:text-sm">
               <div className="py-2.5 flex items-center justify-between">
                 <span className="text-zinc-400">Start date</span>
@@ -339,10 +339,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           </div>
         )}
 
-        {/* TAB 2: EPISODES */}
+        {}
         {activeTab === 'Episodes' && (
           <div className="space-y-5 animate-fadeIn">
-            {/* Season Pills */}
+            {}
             <div className="flex gap-2">
               {anime.seasons.map((s, idx) => (
                 <button
@@ -360,7 +360,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               ))}
             </div>
 
-            {/* Episode Filter Bar */}
+            {}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[200px]">
                 <input
@@ -398,7 +398,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </button>
             </div>
 
-            {/* Episode List */}
+            {}
             <div className="space-y-3">
               <div className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">
                 {allEpisodes.length} episodes
@@ -409,7 +409,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                   const isEpWatched = !!watchedEpisodes[ep.number];
                   const unreleased = isEpisodeUnreleased(ep);
 
-                  // Calculate display duration without hardcoding "24 min"
+                  
                   const durationDisplay = ep.durationSec && ep.durationSec > 0
                     ? `${Math.round(ep.durationSec / 60)}m`
                     : (ep.airedDate ? ep.airedDate : '');
@@ -434,7 +434,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                       }`}
                     >
                       <div className={`flex ${isGridView ? 'flex-col' : 'items-center'} gap-3 flex-1 min-w-0`}>
-                        {/* Thumbnail or Unreleased Slate */}
+                        {}
                         <div className="relative aspect-video w-full sm:w-36 rounded-xl overflow-hidden shrink-0 bg-zinc-900 flex items-center justify-center">
                           {unreleased ? (
                             <div className="flex flex-col items-center justify-center text-zinc-500 p-2 text-center space-y-1">
@@ -458,13 +458,13 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                             EP {ep.number}
                           </span>
 
-                          {/* Watched progress bar */}
+                          {}
                           {isEpWatched && !unreleased && (
                             <div className="absolute bottom-0 inset-x-0 h-1 bg-[#74cf66]" />
                           )}
                         </div>
 
-                        {/* Title & metadata */}
+                        {}
                         <div className="min-w-0 flex-1">
                           <h4 className={`font-semibold text-sm truncate ${
                             unreleased ? 'text-zinc-400' : 'text-white group-hover:text-[#74cf66] transition-colors'
@@ -483,7 +483,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
                         </div>
                       </div>
 
-                      {/* Right icons */}
+                      {}
                       {!unreleased && (
                         <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                           <button
@@ -521,10 +521,10 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
           </div>
         )}
 
-        {/* TAB 3: RELATED */}
+        {}
         {activeTab === 'Related' && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Seasons Row */}
+            {}
             <div className="space-y-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">Seasons</h3>
               <div className="space-y-2">
@@ -575,7 +575,7 @@ export const AnimeDetailModal: React.FC<Props> = ({ anime, onClose }) => {
               </div>
             </div>
 
-            {/* More Like This Row */}
+            {}
             <div className="space-y-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">More Like This</h3>
               <div className="space-y-2">

@@ -97,7 +97,7 @@ export const RandomPickModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
         className="w-full max-w-lg bg-[#121216] border border-zinc-800 rounded-3xl p-6 shadow-2xl text-white space-y-5 animate-slideUp overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-[#74cf66]/20 text-[#74cf66]">

@@ -54,7 +54,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
         className="w-full max-w-lg bg-[#0e0c18] border border-[#74cf66]/30 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-y-auto max-h-[90vh] text-white"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header Card */}
+        {}
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <img
@@ -78,7 +78,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
           </button>
         </div>
 
-        {/* Section: THIS TITLE */}
+        {}
         <div className="mt-4">
           <h4 className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 mb-2">
             This Title
@@ -115,7 +115,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Section: MOVE ON ANILIST */}
+        {}
         <div className="mt-5">
           <h4 className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 mb-2">
             Move on AniList
@@ -148,7 +148,7 @@ export const ContinueContextMenu: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Close Button */}
+        {}
         <div className="mt-5">
           <button
             onClick={onClose}

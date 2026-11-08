@@ -68,7 +68,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
         className="w-full max-w-md bg-[#121216] border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#02A9FF] flex items-center justify-center font-bold text-white text-base">
@@ -84,7 +84,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Current status if logged in */}
+        {}
         {currentUser && (
           <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </div>
         )}
 
-        {/* Tab Navigation */}
+        {}
         <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-semibold">
           <button
             onClick={() => setActiveTab('login')}
@@ -136,7 +136,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Feedback message */}
+        {}
         {statusMessage && (
           <div
             className={`p-3 rounded-xl text-xs font-medium ${
@@ -149,7 +149,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </div>
         )}
 
-        {/* Tab 1: One Click OAuth Sign In */}
+        {}
         {activeTab === 'login' && (
           <div className="space-y-4 pt-1">
             <p className="text-xs text-zinc-400">
@@ -168,7 +168,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </div>
         )}
 
-        {/* Tab 2: Manual Token or PIN */}
+        {}
         {activeTab === 'token' && (
           <form onSubmit={handleTokenSubmit} className="space-y-4 pt-1">
             <p className="text-xs text-zinc-400">
@@ -194,7 +194,7 @@ export const AniListAuthModal: React.FC<Props> = ({ onClose }) => {
           </form>
         )}
 
-        {/* Tab 3: Public Username */}
+        {}
         {activeTab === 'username' && (
           <form onSubmit={handleUsernameSubmit} className="space-y-4 pt-1">
             <p className="text-xs text-zinc-400">

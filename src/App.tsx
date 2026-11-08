@@ -47,7 +47,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="relative min-h-screen text-zinc-100 flex flex-col font-sans selection:bg-[#74cf66] selection:text-black">
-      {/* Canvas background (AMOLED pure black vs Dark) */}
+      {}
       <div
         className="fixed inset-0 z-0 pointer-events-none transition-colors duration-500"
         style={{
@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
         }}
       />
 
-      {/* Optional Background Anime Backdrop */}
+      {}
       {settings.backdropSource !== 'none' && settings.backdropImage && (
         <>
           <div
@@ -80,7 +80,7 @@ const AppContent: React.FC = () => {
         </>
       )}
 
-      {/* Main App Content */}
+      {}
       <div
         className={`relative z-10 flex flex-col min-h-screen transition-all ${
           settings.navigationLayout === 'sidebar' ? 'md:pl-16' : ''
@@ -97,9 +97,9 @@ const AppContent: React.FC = () => {
         </main>
       </div>
 
-      {/* OVERLAYS & MODALS */}
+      {}
 
-      {/* Startup Loading Screen */}
+      {}
       {showIntro && (
         <AppIntro
           onFinish={() => {
@@ -108,7 +108,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Crunchyroll-style Profile Selection Screen (after loading screen or when switching profile) */}
+      {}
       {!showIntro && (!hasSelectedProfileSession || showProfileModal) && (
         <CrunchyrollProfileScreen
           onSelectProfile={() => {
@@ -121,7 +121,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Anime Details Modal */}
+      {}
       {selectedAnime && (
         <AnimeDetailModal
           anime={selectedAnime}
@@ -129,7 +129,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Fullscreen Video Player */}
+      {}
       {activeVideo && (
         <VideoPlayer
           anime={activeVideo.anime}
@@ -139,22 +139,22 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Settings Modal */}
+      {}
       {showSettingsModal && (
         <SettingsModal onClose={() => setShowSettingsModal(false)} />
       )}
 
-      {/* Random Pick Modal */}
+      {}
       {showRandomModal && (
         <RandomPickModal onClose={() => setShowRandomModal(false)} />
       )}
 
-      {/* Notifications Modal */}
+      {}
       {showNotificationsModal && (
         <NotificationsModal onClose={() => setShowNotificationsModal(false)} />
       )}
 
-      {/* AniList Auth Modal */}
+      {}
       {showAuthModal && (
         <AniListAuthModal onClose={() => setShowAuthModal(false)} />
       )}

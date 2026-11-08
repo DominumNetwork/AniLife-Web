@@ -70,7 +70,7 @@ export const VideoPlayer: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(1440); // 24 mins default
+  const [duration, setDuration] = useState(1440); 
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(settings.playbackSpeed || 1.0);
@@ -80,27 +80,27 @@ export const VideoPlayer: React.FC<Props> = ({
   const [isControlsVisible, setIsControlsVisible] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
 
-  // Active sheets
+  
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<'none' | 'servers' | 'episodes' | 'captions'>('none');
 
-  // Skip Timing State
+  
   const [skipData, setSkipData] = useState<MediaIndexSkipData | null>(null);
   const [skipToast, setSkipToast] = useState<string | null>(null);
 
-  // Real episodes loaded from media-index CDN
+  
   const [realEpisodes, setRealEpisodes] = useState<Episode[]>(() => {
     return anime.seasons[0]?.episodes || [];
   });
 
-  // Direct MP4 or HLS stream URL from media-index or scrapers
+  
   const [streamUrl, setStreamUrl] = useState<string>('');
   const [streamError, setStreamError] = useState<boolean>(false);
 
-  // Clock string
+  
   const [clockString, setClockString] = useState('');
 
-  // Subtitles offset
+  
   const [subOffsetSec, setSubOffsetSec] = useState(settings.subtitleOffsetSec || 0.0);
   const [selectedSubLanguage, setSelectedSubLanguage] = useState(settings.preferredSubLanguage || 'English');
   const [subtitles, setSubtitles] = useState<Array<{ language: string; label: string; url: string; default?: boolean }>>([]);
@@ -108,7 +108,7 @@ export const VideoPlayer: React.FC<Props> = ({
 
   const numericAniListId = getAnimeAniListId(anime);
 
-  // 1. Fetch real episodes from media-index
+  
   useEffect(() => {
     if (!isNaN(numericAniListId)) {
       fetchMediaIndexEpisodes(numericAniListId).then((eps) => {
@@ -129,7 +129,7 @@ export const VideoPlayer: React.FC<Props> = ({
     }
   }, [anime.id, numericAniListId]);
 
-  // 2. Fetch skip timings for current episode
+  
   useEffect(() => {
     if (!isNaN(numericAniListId)) {
       fetchMediaIndexSkip(numericAniListId, currentEpisodeNumber).then((data) => {
@@ -138,7 +138,7 @@ export const VideoPlayer: React.FC<Props> = ({
     }
   }, [numericAniListId, currentEpisodeNumber]);
 
-  // 3. Resolve stream URL from scraper API or Lili media-index archive
+  
   useEffect(() => {
     setIsLoading(true);
     setStreamError(false);
@@ -205,7 +205,7 @@ export const VideoPlayer: React.FC<Props> = ({
         }
       }
 
-      // 2. Client-side media-index Lili archive fallback
+      
       if (!isNaN(numericAniListId) && !isCancelled) {
         try {
           const lili = await fetchMediaIndexLiliStream(numericAniListId);
@@ -221,7 +221,7 @@ export const VideoPlayer: React.FC<Props> = ({
         }
       }
 
-      // 3. Bulletproof fallback stream so playback never fails
+      
       if (!isCancelled) {
         setStreamUrl('https://test-streams.mux.dev/big_buck_bunny/bbb_720p.m3u8');
         setIsLoading(false);
@@ -240,12 +240,12 @@ export const VideoPlayer: React.FC<Props> = ({
     return () => { isCancelled = true; };
   }, [numericAniListId, currentEpisodeNumber, activeServer.id, audioMode, anime.title, settings.discordRichPresence]);
 
-  // Handle Video element playback and Hls.js stream attachment
+  
   useEffect(() => {
     const video = videoRef.current;
     if (!video || isLoading || !streamUrl) return;
 
-    // Clean up previous HLS instance
+    
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
@@ -306,11 +306,11 @@ export const VideoPlayer: React.FC<Props> = ({
     };
   }, [streamUrl, isLoading]);
 
-  // 4. Auto-skip intro/outro detection loop
+  
   useEffect(() => {
     if (!skipData || !isPlaying) return;
 
-    // Check OP
+    
     if (Array.isArray(skipData.op) && skipData.op.length >= 2) {
       const [opStart, opEnd] = skipData.op;
       if (currentTime >= opStart && currentTime < opEnd) {
@@ -321,7 +321,7 @@ export const VideoPlayer: React.FC<Props> = ({
       }
     }
 
-    // Check ED
+    
     if (Array.isArray(skipData.ed) && skipData.ed.length >= 2) {
       const [edStart, edEnd] = skipData.ed;
       if (currentTime >= edStart && currentTime < edEnd) {
@@ -338,7 +338,7 @@ export const VideoPlayer: React.FC<Props> = ({
     setTimeout(() => setSkipToast(null), 3000);
   };
 
-  // Keep Clock updated every second
+  
   useEffect(() => {
     const updateClock = () => {
       const clock = formatPlayerClock(currentTime, duration, new Date());
@@ -349,14 +349,14 @@ export const VideoPlayer: React.FC<Props> = ({
     return () => clearInterval(interval);
   }, [currentTime, duration]);
 
-  // Sync watch progress to global context
+  
   useEffect(() => {
     if (currentTime > 0) {
       updateWatchProgress(anime.id, currentEpisodeNumber, currentTime, duration);
     }
   }, [currentTime, currentEpisodeNumber, anime.id, duration]);
 
-  // Auto-hide controls when playing and not interacting
+  
   useEffect(() => {
     if (!isPlaying || isLocked || showSettingsSheet || activeDrawer !== 'none') return;
     const hideTimer = setTimeout(() => {
@@ -413,17 +413,17 @@ export const VideoPlayer: React.FC<Props> = ({
       videoUrl: streamUrl
     };
 
-  // Object fit class based on screen size setting
+  
   const objectFitClass =
     screenSize === 'Fit' ? 'object-contain' : screenSize === 'Crop' ? 'object-cover' : 'object-fill';
 
-  // In OP/ED interval detection for skip button display
+  
   const isInOp = Array.isArray(skipData?.op) && skipData.op.length >= 2 && currentTime >= skipData.op[0] && currentTime <= skipData.op[1];
   const isInEd = Array.isArray(skipData?.ed) && skipData.ed.length >= 2 && currentTime >= skipData.ed[0] && currentTime <= skipData.ed[1];
 
   return (
     <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col h-full w-full overflow-hidden select-none font-sans">
-      {/* Skip Notification Toast */}
+      {}
       {skipToast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/80 backdrop-blur-xl border border-[#74cf66]/50 shadow-2xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 animate-bounce">
           <Sparkles className="w-4 h-4 text-[#74cf66]" />
@@ -431,13 +431,13 @@ export const VideoPlayer: React.FC<Props> = ({
         </div>
       )}
 
-      {/* VIDEO CONTAINER - Guaranteed visible on all screens (portrait, landscape, laptop, desktop) */}
+      {}
       <div
         ref={containerRef}
         onClick={handleContainerClick}
         className="relative w-full shrink-0 aspect-video h-[45vh] sm:h-[55vh] lg:h-[65vh] max-h-[70vh] bg-black overflow-hidden flex items-center justify-center cursor-pointer group shadow-2xl"
       >
-        {/* HTML5 Video Player */}
+        {}
         <video
           ref={videoRef}
           src={!streamUrl.includes('.m3u8') ? streamUrl : undefined}
@@ -480,7 +480,7 @@ export const VideoPlayer: React.FC<Props> = ({
           ))}
         </video>
 
-        {/* STREAM ERROR OVERLAY */}
+        {}
         {streamError && !isLoading && (
           <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 p-6 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-xl">
@@ -509,7 +509,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* LOADING SPINNER */}
+        {}
         {isLoading && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm space-y-3">
             <div className="relative flex items-center justify-center">
@@ -526,7 +526,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* GLOWING SKIP OP / ED BUTTON */}
+        {}
         {!settings.autoSkipIntro && (isInOp || isInEd) && (
           <button
             onClick={handleSkipButton}
@@ -537,7 +537,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </button>
         )}
 
-        {/* LOCKED BADGE */}
+        {}
         {isLocked && (
           <div className="absolute top-4 left-4 z-40">
             <button
@@ -553,14 +553,14 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* OVERLAY CONTROLS */}
+        {}
         {!isLocked && (
           <div
             className={`absolute inset-0 z-20 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-t from-black/85 via-black/25 to-black/80 transition-opacity duration-300 ${
               isControlsVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
-            {/* TOP BAR */}
+            {}
             <div className="flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3">
                 <button
@@ -580,14 +580,14 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Right action icons */}
+              {}
               <div className="flex items-center gap-1 sm:gap-2">
-                {/* Clock indicator */}
+                {}
                 <span className="hidden sm:inline-block text-xs text-zinc-300 font-mono px-2 py-1 rounded bg-black/40 border border-white/10">
                   {clockString}
                 </span>
 
-                {/* Lock screen */}
+                {}
                 <button
                   onClick={() => setIsLocked(true)}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -596,7 +596,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
-                {/* Subtitles & Captions */}
+                {}
                 <button
                   onClick={() => setActiveDrawer(activeDrawer === 'captions' ? 'none' : 'captions')}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -605,7 +605,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Subtitles className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
-                {/* Server picker */}
+                {}
                 <button
                   onClick={() => setActiveDrawer(activeDrawer === 'servers' ? 'none' : 'servers')}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -614,7 +614,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   <Server className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
-                {/* Settings Bottom Sheet Trigger (Screenshot 1) */}
+                {}
                 <button
                   onClick={() => setShowSettingsSheet(true)}
                   className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -625,12 +625,12 @@ export const VideoPlayer: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* CENTER PLAY/PAUSE & JUMP BUTTONS */}
+            {}
             <div
               className="flex items-center justify-center gap-8 sm:gap-14"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Skip back 10s */}
+              {}
               <button
                 onClick={() => handleSeek(currentTime - 10)}
                 className="p-3 rounded-full hover:bg-white/10 text-white/90 hover:text-white transition-all transform hover:scale-110 cursor-pointer"
@@ -639,7 +639,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
 
-              {/* Previous episode */}
+              {}
               <button
                 onClick={() => {
                   if (currentEpisodeNumber > 1) {
@@ -653,7 +653,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 <SkipBack className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              {/* Main Play/Pause Button */}
+              {}
               <button
                 onClick={handlePlayPause}
                 className="p-4 sm:p-5 rounded-full bg-[#74cf66] hover:bg-[#62b956] text-black shadow-2xl shadow-[rgba(116,207,102,0.4)] transition-all transform hover:scale-110 active:scale-95 cursor-pointer"
@@ -665,7 +665,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 )}
               </button>
 
-              {/* Next episode */}
+              {}
               <button
                 onClick={() => {
                   const nextNum = currentEpisodeNumber + 1;
@@ -680,7 +680,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 <SkipForward className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              {/* Skip forward 10s */}
+              {}
               <button
                 onClick={() => handleSeek(currentTime + 10)}
                 className="p-3 rounded-full hover:bg-white/10 text-white/90 hover:text-white transition-all transform hover:scale-110 cursor-pointer"
@@ -690,9 +690,9 @@ export const VideoPlayer: React.FC<Props> = ({
               </button>
             </div>
 
-            {/* BOTTOM SEEKBAR & CONTROLS */}
+            {}
             <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-              {/* Progress Slider */}
+              {}
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono text-zinc-300 w-11 text-right">
                   {formatTime(currentTime)}
@@ -713,10 +713,10 @@ export const VideoPlayer: React.FC<Props> = ({
                 </span>
               </div>
 
-              {/* Quick Bar bottom controls */}
+              {}
               <div className="flex items-center justify-between text-xs text-zinc-300">
                 <div className="flex items-center gap-2">
-                  {/* Mute/Volume Toggle */}
+                  {}
                   <button
                     onClick={() => {
                       if (videoRef.current) {
@@ -729,7 +729,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
                   </button>
 
-                  {/* Audio sub/dub badge */}
+                  {}
                   <button
                     onClick={() => setAudioMode(audioMode === 'SUB' ? 'DUB' : 'SUB')}
                     className="px-2.5 py-0.5 rounded-full bg-black/60 border border-[#74cf66]/40 text-[11px] font-bold text-[#74cf66] cursor-pointer"
@@ -737,7 +737,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     {audioMode}
                   </button>
 
-                  {/* Active server badge */}
+                  {}
                   <button
                     onClick={() => setActiveDrawer('servers')}
                     className="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-zinc-300 cursor-pointer"
@@ -747,7 +747,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Speed shortcut */}
+                  {}
                   <button
                     onClick={() => setShowSettingsSheet(true)}
                     className="px-2 py-0.5 rounded-md hover:bg-white/10 font-bold text-[11px]"
@@ -755,7 +755,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     {playbackSpeed}x
                   </button>
 
-                  {/* Episodes drawer toggle */}
+                  {}
                   <button
                     onClick={() => setActiveDrawer(activeDrawer === 'episodes' ? 'none' : 'episodes')}
                     className="p-1.5 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white"
@@ -764,7 +764,7 @@ export const VideoPlayer: React.FC<Props> = ({
                     <ListOrdered className="w-4 h-4" />
                   </button>
 
-                  {/* Fullscreen toggle */}
+                  {}
                   <button
                     onClick={() => {
                       if (!document.fullscreenElement) {
@@ -783,9 +783,9 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* EXACT PLAYER SETTINGS BOTTOM SHEET (Matches User Screenshot 1) */}
-        {/* ------------------------------------------------------------- */}
+        {}
+        {}
+        {}
         {showSettingsSheet && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -794,7 +794,7 @@ export const VideoPlayer: React.FC<Props> = ({
             <div
               className="w-full max-w-lg mx-auto bg-[#0a0a0c] border-t border-white/15 rounded-t-3xl p-5 sm:p-6 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto no-scrollbar text-white animate-slideUp"
             >
-              {/* Sheet Header (Screenshot 1: NOW PLAYING / Settings / Close) */}
+              {}
               <div className="flex items-center justify-between pb-1 border-b border-white/10">
                 <div>
                   <div className="text-[10px] font-bold text-zinc-400 tracking-wider uppercase">
@@ -810,7 +810,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </button>
               </div>
 
-              {/* 1. VOLUME (Screenshot 1: speaker icon + track + 53%) */}
+              {}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   VOLUME
@@ -840,7 +840,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 2. PLAYBACK SPEED (Screenshot 1: Gauge icon + dot steps + 1x) */}
+              {}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   PLAYBACK SPEED
@@ -877,7 +877,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 3. QUALITY (Screenshot 1: HQ icon + slider stops + Auto) */}
+              {}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   QUALITY
@@ -913,7 +913,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 4. AUDIO (Screenshot 1: [ Sub ] [ Dub ] buttons + helper text) */}
+              {}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   AUDIO
@@ -947,7 +947,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 5. AUDIO FORMAT (Screenshot 1: AAC • Stereo • decoded on this device) */}
+              {}
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   AUDIO FORMAT
@@ -957,7 +957,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 6. SCREEN SIZE (Screenshot 1: [ Fit ] [ Crop ] [ Fill ]) */}
+              {}
               <div className="space-y-2">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   SCREEN SIZE
@@ -980,13 +980,13 @@ export const VideoPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 7. PLAYBACK TOGGLES (Screenshot 1: Auto-play next / Auto-skip) */}
+              {}
               <div className="space-y-2.5 pt-1">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   PLAYBACK
                 </div>
 
-                {/* Auto-play next episode */}
+                {}
                 <label className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
                   <span className="text-xs font-semibold text-white">Auto-play next episode</span>
                   <input
@@ -997,7 +997,7 @@ export const VideoPlayer: React.FC<Props> = ({
                   />
                 </label>
 
-                {/* Auto-skip intro, recap and outro */}
+                {}
                 <label className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer">
                   <div>
                     <div className="text-xs font-semibold text-white">Auto-skip intro, recap and outro</div>
@@ -1012,7 +1012,7 @@ export const VideoPlayer: React.FC<Props> = ({
                 </label>
               </div>
 
-              {/* Bottom Chevron to slide down (Screenshot 1) */}
+              {}
               <div className="flex justify-center pt-2">
                 <button
                   type="button"
@@ -1026,9 +1026,9 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* DRAWER: SERVER / SOURCE PICKER SHEET (PlayerSourcesSheet.kt) */}
-        {/* ------------------------------------------------------------- */}
+        {}
+        {}
+        {}
         {activeDrawer === 'servers' && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -1091,7 +1091,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* DRAWER: CAPTIONS / SUBTITLES */}
+        {}
         {activeDrawer === 'captions' && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -1130,7 +1130,7 @@ export const VideoPlayer: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Timing Offset */}
+            {}
             <div className="space-y-2 pt-2 border-t border-white/10">
               <span className="font-bold uppercase tracking-wider text-[11px] text-zinc-400">Timing Offset</span>
               <div className="flex items-center justify-between bg-white/5 p-2 rounded-2xl">
@@ -1152,7 +1152,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         )}
 
-        {/* DRAWER: EPISODES DRAWER */}
+        {}
         {activeDrawer === 'episodes' && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -1202,9 +1202,9 @@ export const VideoPlayer: React.FC<Props> = ({
         )}
       </div>
 
-      {/* METADATA & EPISODES LIST BELOW PLAYER */}
+      {}
       <div className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* Episode Title & Metadata */}
+        {}
         <div className="space-y-1">
           <h2 className="text-xl sm:text-2xl font-black text-white">{currentEpisode.title}</h2>
           <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-400">
@@ -1223,7 +1223,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </p>
         </div>
 
-        {/* Anime Title Pill Row */}
+        {}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10">
           <div className="flex items-center gap-3">
             <img
@@ -1257,7 +1257,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Server & Audio Quick Pills */}
+        {}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveDrawer('servers')}
@@ -1282,7 +1282,7 @@ export const VideoPlayer: React.FC<Props> = ({
           </button>
         </div>
 
-        {/* Episodes Grid/List below (Screenshot 220330) */}
+        {}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-white">Episodes ({activeEpisodes.length})</h3>

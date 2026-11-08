@@ -61,7 +61,7 @@ export const DEFAULT_PROFILES: UserProfile[] = [
 ];
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  // Theme & Appearance
+  
   themePreset: 'Midnight',
   canvasBackground: 'amoled',
   accentColor: '#74cf66',
@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   refreshSpinner: true,
   playAppIntro: true,
 
-  // Player
+  
   autoPlayNext: true,
   autoSkipIntro: true,
   skipFiller: true,
@@ -85,7 +85,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   screenFit: 'Fit',
   defaultAudioMode: 'SUB',
 
-  // Subtitles
+  
   showSubtitlesByDefault: true,
   subtitlesOnDub: false,
   preferredSubLanguage: 'English',
@@ -93,7 +93,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   captionSize: 'Medium',
   subtitleOffsetSec: 0,
 
-  // Servers & Sources
+  
   activeServer: 'zoko',
   serverPriority: [
     'zoko',
@@ -120,13 +120,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
     'animeheaven'
   ],
 
-  // Content
+  
   hideAdultContent: false,
   titleLanguage: 'romaji',
   blurSpoilers: false,
   onlyWatchableEpisodes: false,
 
-  // Accounts & Sync
+  
   anilistConnected: false,
   anilistUsername: '',
   discordConnected: false,
@@ -134,7 +134,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   discordRichPresence: true,
   dnsOverHttps: true,
 
-  // Navigation & Layout
+  
   navigationLayout: 'sidebar',
   autoHideNav: false,
 };

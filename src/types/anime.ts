@@ -22,8 +22,8 @@ export interface Season {
 export interface RelatedAnime {
   id: string;
   title: string;
-  relation: string; // 'Season 1', 'Season 2', 'Prequel', 'Sequel', 'Spin-off', 'More like this'
-  format: string; // 'TV', 'ONA', 'Movie'
+  relation: string; 
+  format: string; 
   year: number;
   poster: string;
   episodesCount?: number;
@@ -37,7 +37,7 @@ export interface Anime {
   nativeTitle?: string;
   bannerImage: string;
   posterImage: string;
-  score: number; // percentage like 85
+  score: number; 
   format: 'TV' | 'Movie' | 'ONA' | 'OVA' | 'Special';
   year: number;
   status: 'Finished' | 'Releasing' | 'Not Yet Aired';
@@ -46,7 +46,7 @@ export interface Anime {
   synopsis: string;
   studio: string;
   startDate: string;
-  seasonName: string; // 'Winter', 'Spring', 'Summer', 'Fall'
+  seasonName: string; 
   membersCount: number;
   trailerUrl?: string;
   hasDub: boolean;
@@ -54,8 +54,8 @@ export interface Anime {
   seasons: Season[];
   related: RelatedAnime[];
   airSchedule?: {
-    dayOfWeek: number; // 0 Sun - 6 Sat
-    airTime: string; // e.g. "23:00"
+    dayOfWeek: number; 
+    airTime: string; 
     nextEpisode: number;
   };
 }
@@ -87,7 +87,7 @@ export interface ServerOption {
   supportsDub: boolean;
   supportsSub: boolean;
   supportsDownload: boolean;
-  badge?: string; // e.g. 'Cloudflare', 'Español', 'Hindi', 'Archive'
+  badge?: string; 
   description?: string;
 }
 
@@ -115,7 +115,7 @@ export type ThemePresetName =
   | 'High contrast';
 
 export interface AppSettings {
-  // Theme & Appearance
+  
   themePreset: ThemePresetName;
   canvasBackground: 'amoled' | 'dark';
   accentColor: string;
@@ -127,19 +127,19 @@ export interface AppSettings {
   refreshSpinner: boolean;
   playAppIntro: boolean;
 
-  // Player
+  
   autoPlayNext: boolean;
   autoSkipIntro: boolean;
   skipFiller: boolean;
   showSkipButton: boolean;
-  skipButtonLength: number; // default 85s
-  watchedThreshold: number; // default 80%
+  skipButtonLength: number; 
+  watchedThreshold: number; 
   defaultQuality: 'Auto' | '1080p' | '720p' | '480p';
-  playbackSpeed: number; // default 1.0
+  playbackSpeed: number; 
   screenFit: 'Fit' | 'Crop' | 'Fill';
   defaultAudioMode: 'SUB' | 'DUB';
 
-  // Subtitles
+  
   showSubtitlesByDefault: boolean;
   subtitlesOnDub: boolean;
   preferredSubLanguage: string;
@@ -147,18 +147,18 @@ export interface AppSettings {
   captionSize: 'Small' | 'Medium' | 'Large';
   subtitleOffsetSec: number;
 
-  // Servers & Sources
+  
   activeServer: string;
   serverPriority: string[];
   enabledServers: string[];
 
-  // Content
+  
   hideAdultContent: boolean;
   titleLanguage: 'romaji' | 'english' | 'native';
   blurSpoilers: boolean;
   onlyWatchableEpisodes: boolean;
 
-  // Accounts & Sync
+  
   anilistConnected: boolean;
   anilistUsername?: string;
   discordConnected: boolean;
@@ -168,7 +168,7 @@ export interface AppSettings {
   discordRichPresence: boolean;
   dnsOverHttps: boolean;
 
-  // Navigation & Layout
+  
   navigationLayout: 'sidebar' | 'topbar';
   autoHideNav: boolean;
 }

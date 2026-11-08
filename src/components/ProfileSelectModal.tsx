@@ -34,7 +34,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
   const [pinError, setPinError] = useState(false);
   const [showPinHint, setShowPinHint] = useState(false);
 
-  // Edit / Add form state
+  
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const [formName, setFormName] = useState('');
   const [formAvatar, setFormAvatar] = useState(POPULAR_AVATARS[0].url);
@@ -44,13 +44,13 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
   const [customAvatarUrl, setCustomAvatarUrl] = useState('');
 
   const colorSwatches = [
-    '#74cf66', // AniLife Green
-    '#3B82F6', // Blue
-    '#06B6D4', // Cyan
-    '#10B981', // Emerald
-    '#F59E0B', // Amber
-    '#D1102B', // Blood Red
-    '#F472B6', // Sakura Pink
+    '#74cf66', 
+    '#3B82F6', 
+    '#06B6D4', 
+    '#10B981', 
+    '#F59E0B', 
+    '#D1102B', 
+    '#F472B6', 
   ];
 
   const handleSelectProfile = (profile: UserProfile) => {
@@ -146,7 +146,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
         className="w-full max-w-lg bg-[#0a0a0c] border border-[#74cf66]/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-3">
             {mode !== 'select' && (
@@ -180,7 +180,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* 1. SELECT MODE */}
+        {}
         {mode === 'select' && (
           <div className="space-y-6 animate-fadeIn">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -191,7 +191,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
                     key={prof.id}
                     className="relative flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#74cf66]/50 transition-all group"
                   >
-                    {/* Edit button */}
+                    {}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -241,7 +241,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
                 );
               })}
 
-              {/* Add Profile Tile */}
+              {}
               <button
                 onClick={openAddProfile}
                 className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-[#74cf66] transition-all cursor-pointer group min-h-[140px]"
@@ -264,10 +264,10 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
           </div>
         )}
 
-        {/* 2. PIN UNLOCK MODE */}
+        {}
         {mode === 'pin' && pinTargetProfile && (
           <div className="space-y-6 text-center animate-fadeIn">
-            {/* Profile Avatar with Lock Badge */}
+            {}
             <div className="relative w-20 h-20 mx-auto">
               <img
                 src={pinTargetProfile.avatar}
@@ -279,7 +279,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* PIN Dots */}
+            {}
             <div className="flex justify-center gap-4 py-2">
               {[0, 1, 2, 3].map((i) => (
                 <div
@@ -307,7 +307,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </p>
             )}
 
-            {/* Circular Keypad */}
+            {}
             <div className="grid grid-cols-3 gap-3 max-w-[260px] mx-auto pt-2">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((btn, idx) => {
                 if (btn === '') return <div key={idx} />;
@@ -351,10 +351,10 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
           </div>
         )}
 
-        {/* 3. ADD / EDIT PROFILE FORM */}
+        {}
         {(mode === 'add' || mode === 'edit') && (
           <form onSubmit={mode === 'add' ? handleSaveAdd : handleSaveEdit} className="space-y-5 animate-fadeIn">
-            {/* Avatar Preview */}
+            {}
             <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5">
               <img
                 src={customAvatarUrl.trim() || formAvatar}
@@ -381,7 +381,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* Popular Anime Character Avatars */}
+            {}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
@@ -418,7 +418,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* Custom Avatar URL option */}
+            {}
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                 Or Custom Image URL
@@ -432,7 +432,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               />
             </div>
 
-            {/* Accent Color Selection */}
+            {}
             <div className="space-y-2">
               <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                 Profile Accent Colour
@@ -452,7 +452,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* 4-digit PIN lock option */}
+            {}
             <div className="space-y-1.5 p-3 rounded-2xl bg-white/5 border border-white/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -484,7 +484,7 @@ export const ProfileSelectModal: React.FC<Props> = ({ onClose }) => {
               </p>
             </div>
 
-            {/* Actions */}
+            {}
             <div className="flex items-center justify-between pt-2">
               {mode === 'edit' && editingProfileId && profiles.length > 1 ? (
                 <button

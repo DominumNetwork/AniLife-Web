@@ -19,7 +19,7 @@ export const EnabledServersModal: React.FC<Props> = ({ onClose }) => {
 
   const toggleServer = (serverId: string) => {
     if (enabledList.includes(serverId)) {
-      if (enabledList.length <= 1) return; // Keep at least 1 server enabled
+      if (enabledList.length <= 1) return; 
       updateSettings({
         enabledServers: enabledList.filter(id => id !== serverId)
       });
@@ -39,10 +39,10 @@ export const EnabledServersModal: React.FC<Props> = ({ onClose }) => {
         className="w-full max-w-lg bg-[#0e0c18] border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh] text-white animate-slideUp overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Grab indicator on mobile */}
+        {}
         <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4 sm:hidden" />
 
-        {/* Header */}
+        {}
         <div className="flex items-start justify-between pb-3">
           <div>
             <div className="text-[11px] font-bold text-[#74cf66] tracking-widest uppercase">
@@ -63,12 +63,12 @@ export const EnabledServersModal: React.FC<Props> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Subtitle description matching screenshot */}
+        {}
         <p className="text-[11px] text-zinc-400 leading-relaxed mb-4">
           A server that is off is never asked for episodes and never offered in the player. At least one has to stay on.
         </p>
 
-        {/* Server Cards List */}
+        {}
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 no-scrollbar">
           {SERVERS.map((server) => {
             const isChecked = enabledList.includes(server.id);
@@ -93,7 +93,7 @@ export const EnabledServersModal: React.FC<Props> = ({ onClose }) => {
                     </span>
                   )}
 
-                  {/* Rounded checkbox with checkmark matching screenshot */}
+                  {}
                   <div
                     className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
                       isChecked
@@ -109,7 +109,7 @@ export const EnabledServersModal: React.FC<Props> = ({ onClose }) => {
           })}
         </div>
 
-        {/* Footer Done Button matching screenshot */}
+        {}
         <div className="pt-4 mt-2 border-t border-white/10 flex justify-end">
           <button
             onClick={onClose}

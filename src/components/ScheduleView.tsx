@@ -13,7 +13,7 @@ import {
 export const ScheduleView: React.FC = () => {
   const { setSelectedAnime, playAnimeEpisode, liveCatalog } = useApp();
 
-  // Create rolling 7-day schedule window starting 1 day ago
+  
   const now = new Date();
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -39,7 +39,7 @@ export const ScheduleView: React.FC = () => {
     };
   });
 
-  const [selectedDayIdx, setSelectedDayIdx] = useState(1); // default Today
+  const [selectedDayIdx, setSelectedDayIdx] = useState(1); 
   const [reminders, setReminders] = useState<Record<string, boolean>>({});
   const [scheduleItems, setScheduleItems] = useState<AiringScheduleItem[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
@@ -71,7 +71,7 @@ export const ScheduleView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Schedule</h1>
@@ -83,7 +83,7 @@ export const ScheduleView: React.FC = () => {
         </div>
       </div>
 
-      {/* Days Tabs */}
+      {}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
         {days.map((d, idx) => {
           const isSelected = selectedDayIdx === idx;
@@ -108,7 +108,7 @@ export const ScheduleView: React.FC = () => {
         })}
       </div>
 
-      {/* Timetable List */}
+      {}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
           <span>Releases on {selectedDay.label}</span>

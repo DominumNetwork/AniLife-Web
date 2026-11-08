@@ -125,7 +125,7 @@ interface AppContextType {
   updateSettings: (newSettings: Partial<AppSettings>) => void;
   applyThemePreset: (presetName: ThemePresetName) => void;
   
-  // Profiles Management
+  
   profiles: UserProfile[];
   activeProfile: UserProfile;
   switchProfile: (profile: UserProfile) => void;
@@ -133,7 +133,7 @@ interface AppContextType {
   updateProfile: (id: string, updates: Partial<UserProfile>) => void;
   deleteProfile: (id: string) => boolean;
 
-  // Modals
+  
   showProfileModal: boolean;
   setShowProfileModal: (show: boolean) => void;
   showSettingsModal: boolean;
@@ -145,19 +145,19 @@ interface AppContextType {
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
   
-  // Search
+  
   recentSearches: string[];
   addRecentSearch: (query: string) => void;
   removeRecentSearch: (query: string) => void;
   clearRecentSearches: () => void;
   
-  // Playback & Watch Actions
+  
   updateWatchProgress: (animeId: string, episodeNumber: number, currentTimeSec: number, durationSec: number) => void;
   removeFromContinueWatching: (animeId: string) => void;
   setAnimeWatchStatus: (animeId: string, status: WatchStatus) => Promise<void>;
   playAnimeEpisode: (anime: Anime, episodeNum?: number, audioMode?: 'SUB' | 'DUB') => void;
 
-  // Real AniList OAuth and Data
+  
   currentUser: AniListUserData | null;
   oauthToken: string | null;
   isSyncingAniList: boolean;
@@ -167,7 +167,7 @@ interface AppContextType {
   connectAniListUser: (username: string) => Promise<{ success: boolean; error?: string }>;
   syncAniList: () => Promise<void>;
 
-  // Real Live Anime Datasets
+  
   liveCatalog: Anime[];
   trendingAnime: Anime[];
   popularSeasonAnime: Anime[];
@@ -175,7 +175,7 @@ interface AppContextType {
   spotlightAnime: Anime[];
   isLoadingCatalog: boolean;
 
-  // Intro video animation
+  
   showIntro: boolean;
   setShowIntro: (show: boolean) => void;
   playIntroAnimation: () => void;
@@ -188,10 +188,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoPlaybackTarget | null>(null);
 
-  // Settings
+  
   const [settings, setSettingsState] = useState<AppSettings>(loadSettings);
 
-  // Profiles
+  
   const [profiles, setProfiles] = useState<UserProfile[]>(loadProfiles);
   const [activeProfile, setActiveProfileState] = useState<UserProfile>(() => {
     const list = loadProfiles();
@@ -199,12 +199,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return list.find(p => p.id === activeId) || list[0] || DEFAULT_PROFILES[0];
   });
 
-  // Per-profile state
+  
   const [watchlist, setWatchlistState] = useState<WatchlistEntry[]>(() => loadWatchlist(activeProfile.id));
   const [continueWatching, setContinueWatchingState] = useState<ContinueWatchingEntry[]>(() => loadContinueWatching(activeProfile.id));
   const [recentSearches, setRecentSearchesState] = useState<string[]>(() => loadRecentSearches(activeProfile.id));
 
-  // Modals
+  
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showRandomModal, setShowRandomModal] = useState(false);
@@ -227,12 +227,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setShowIntro(true);
   };
 
-  // Real AniList Auth State
+  
   const [oauthToken, setOauthToken] = useState<string | null>(loadOAuthToken);
   const [currentUser, setCurrentUser] = useState<AniListUserData | null>(null);
   const [isSyncingAniList, setIsSyncingAniList] = useState(false);
 
-  // Live Anime Datasets from AniList
+  
   const [liveCatalog, setLiveCatalog] = useState<Anime[]>(() => loadCachedCatalog() || ANIME_CATALOG);
   const [trendingAnime, setTrendingAnime] = useState<Anime[]>([]);
   const [popularSeasonAnime, setPopularSeasonAnime] = useState<Anime[]>([]);
@@ -240,7 +240,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [spotlightAnime, setSpotlightAnime] = useState<Anime[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
 
-  // Sync settings with root CSS variables for dynamic accent themes and canvas
+  
   useEffect(() => {
     document.documentElement.style.setProperty('--anilife-accent', settings.accentColor);
     document.documentElement.style.setProperty('--anilili-accent', settings.accentColor);
@@ -254,7 +254,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [settings.accentColor, settings.canvasBackground]);
 
-  // Handle OAuth postMessage, URL Hash, and Authorization Code on boot
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const queryParams = new URLSearchParams(window.location.search);
@@ -306,7 +306,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Restore authenticated session on boot if token exists
+  
   useEffect(() => {
     const token = oauthToken || loadOAuthToken();
     if (token) {
@@ -324,7 +324,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [oauthToken]);
 
-  // Boot: Fetch actual real anime datasets from AniList GraphQL
+  
   useEffect(() => {
     let isMounted = true;
     async function loadLiveAniList() {
@@ -350,11 +350,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (convSeason.length > 0) setPopularSeasonAnime(convSeason);
         if (convTopRated.length > 0) setTopRatedAnime(convTopRated);
 
-        // Top 5 spotlight anime with high resolution banners
+        
         const spotlights = (convTrending.length > 0 ? convTrending : convSeason).slice(0, 5);
         if (spotlights.length > 0) setSpotlightAnime(spotlights);
 
-        // Merge all unique into liveCatalog
+        
         const allItems = [...convTrending, ...convSeason, ...convTopRated, ...convPopular];
         const uniqueMap = new Map<string, Anime>();
         allItems.forEach(item => {
@@ -363,7 +363,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         });
 
-        // Also add local catalog items
+        
         ANIME_CATALOG.forEach(item => {
           if (!uniqueMap.has(item.id)) {
             uniqueMap.set(item.id, item);
@@ -431,7 +431,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Switch Active Profile and reload per-profile data
+  
   const switchProfile = (profile: UserProfile) => {
     setActiveProfileState(profile);
     saveActiveProfileId(profile.id);
@@ -443,7 +443,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Add a new profile
+  
   const addProfile = (name: string, avatar: string, accentColor: string, pin?: string, isKidsMode?: boolean): UserProfile => {
     const newProf: UserProfile = {
       id: `profile-${Date.now()}`,
@@ -460,7 +460,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newProf;
   };
 
-  // Update existing profile
+  
   const updateProfile = (id: string, updates: Partial<UserProfile>) => {
     const updated = profiles.map(p => (p.id === id ? { ...p, ...updates } : p));
     setProfiles(updated);
@@ -474,7 +474,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Delete profile (cannot delete last remaining profile)
+  
   const deleteProfile = (id: string): boolean => {
     if (profiles.length <= 1) return false;
     const updated = profiles.filter(p => p.id !== id);

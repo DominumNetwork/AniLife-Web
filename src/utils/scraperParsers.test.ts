@@ -23,7 +23,7 @@ test('sanitizeAniChanSubtitleUrl encodes spaces in subtitle filenames', () => {
 });
 
 test('decodeZokoPayload correctly decrypts XOR otaku-embed-v1 payload', () => {
-  // Let's create an XOR-encoded test string with key 'otaku-embed-v1'
+  
   const originalJson = JSON.stringify({
     src: 'https://hls.testcdn.com/master.m3u8',
     subtitles: [{ lang: 'en', label: 'English', src: 'https://hls.testcdn.com/subs/en.vtt' }]

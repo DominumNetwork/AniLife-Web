@@ -1,6 +1,6 @@
 import { Anime, ServerOption } from '../types/anime';
 
-// Real streaming anime sample videos & trailers
+
 const SAMPLE_STREAMS = [
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
@@ -9,7 +9,7 @@ const SAMPLE_STREAMS = [
 ];
 
 export const SERVERS: ServerOption[] = [
-  // Miruro & Anivexa Core Providers (Screenshot 1 & 2)
+  
   { id: 'bee', name: 'Bee', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true, badge: 'Fast' },
   { id: 'anichan', name: 'AniChan', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'anikoto', name: 'Anikoto', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true, badge: 'Fast' },
@@ -30,7 +30,7 @@ export const SERVERS: ServerOption[] = [
   { id: 'cog', name: 'Cog', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'telli', name: 'Telli', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
 
-  // Multi-source & Direct Scrapers (Screenshot 3)
+  
   { id: 'zoko', name: 'Zoko', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'rareanimes', name: 'RareAnimes', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'anidbapp', name: 'AniDB App', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },
@@ -44,7 +44,7 @@ export const SERVERS: ServerOption[] = [
   { id: 'animegg', name: 'Animegg', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'anineko', name: 'Anineko', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
 
-  // Language, Regional & Archive Providers (Screenshot 4)
+  
   { id: 'twodhive', name: '2Dhive', speed: 'Normal', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'animedekho', name: 'AnimeDekho', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },
   { id: 'toonhub4u', name: 'ToonHub4u', speed: 'Fast', supportsDub: true, supportsSub: true, supportsDownload: true },
@@ -58,9 +58,9 @@ export const SERVERS: ServerOption[] = [
   { id: 'hstream', name: 'HStream', speed: 'Fast', supportsDub: false, supportsSub: true, supportsDownload: true },
 ];
 
-/**
- * Universal AniList ID resolver for anime objects (supports slugs, IDs, and anilistId field)
- */
+
+
+
 export function getAnimeAniListId(anime: Anime): number {
   if (anime.anilistId && !isNaN(anime.anilistId)) return anime.anilistId;
   const parsed = parseInt(anime.id, 10);

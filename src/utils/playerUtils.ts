@@ -1,6 +1,6 @@
-/**
- * Anilife Player Utility Functions
- */
+
+
+
 
 export function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '00:00';
@@ -28,7 +28,7 @@ export function formatPlayerClock(currentTimeSec: number, durationSec: number, n
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
-    hours = hours ? hours : 12; // 0 becomes 12
+    hours = hours ? hours : 12; 
     return `${hours}:${minutes} ${ampm}`;
   };
 

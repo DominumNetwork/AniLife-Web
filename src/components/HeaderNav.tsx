@@ -30,7 +30,7 @@ export const HeaderNav: React.FC = () => {
   const [isMouseNearEdge, setIsMouseNearEdge] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Auto-hide edge detection if enabled
+  
   useEffect(() => {
     if (!settings.autoHideNav) {
       setIsMouseNearEdge(true);
@@ -78,7 +78,7 @@ export const HeaderNav: React.FC = () => {
     { id: 'downloads', label: 'Downloads', icon: Download },
   ] as const;
 
-  // 1. SIDEBAR MODE (Desktop Screenshot layout)
+  
   if (settings.navigationLayout === 'sidebar') {
     return (
       <aside
@@ -91,9 +91,9 @@ export const HeaderNav: React.FC = () => {
           settings.autoHideNav && !isMouseNearEdge ? '-translate-x-full' : 'translate-x-0'
         } ${isExpanded ? 'w-52 shadow-2xl' : 'w-16'}`}
       >
-        {/* Top: Logo & Main Navigation */}
+        {}
         <div className="space-y-6">
-          {/* Logo */}
+          {}
           <button
             onClick={() => setActiveTab('home')}
             className="flex items-center gap-3 px-1 py-1 rounded-xl w-full hover:bg-white/5 transition-colors cursor-pointer group"
@@ -111,7 +111,7 @@ export const HeaderNav: React.FC = () => {
             )}
           </button>
 
-          {/* Navigation Items */}
+          {}
           <nav className="space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -139,7 +139,7 @@ export const HeaderNav: React.FC = () => {
           </nav>
         </div>
 
-        {/* Bottom Actions: Random, Notifications, Settings, Profile */}
+        {}
         <div className="space-y-2 pt-4 border-t border-zinc-800/80">
           <button
             onClick={() => setShowRandomModal(true)}
@@ -168,7 +168,7 @@ export const HeaderNav: React.FC = () => {
             {isExpanded && <span className="text-xs font-semibold truncate">Settings</span>}
           </button>
 
-          {/* Profile Avatar */}
+          {}
           <button
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 w-full p-1.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
@@ -195,7 +195,7 @@ export const HeaderNav: React.FC = () => {
     );
   }
 
-  // 2. TOPBAR MODE (Classic horizontal navbar)
+  
   return (
     <header
       className={`sticky top-0 z-40 w-full backdrop-blur-xl bg-black/70 border-b border-zinc-800/80 px-3 sm:px-6 py-2.5 transition-all duration-300 ${
@@ -203,7 +203,7 @@ export const HeaderNav: React.FC = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        {/* Left Branding & Tabs */}
+        {}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
           <button
             onClick={() => setActiveTab('home')}
@@ -242,7 +242,7 @@ export const HeaderNav: React.FC = () => {
           </nav>
         </div>
 
-        {/* Right Action Icons */}
+        {}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setShowRandomModal(true)}
@@ -268,7 +268,7 @@ export const HeaderNav: React.FC = () => {
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* User Profile */}
+          {}
           <button
             onClick={() => setShowProfileModal(true)}
             title={`Profile: ${activeProfile.name}`}

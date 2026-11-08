@@ -53,7 +53,7 @@ export const DownloadsView: React.FC = () => {
     persistSavedDownloads(downloads);
   }, [downloads]);
 
-  // Group downloads by Anime
+  
   const animeGroups = React.useMemo(() => {
     const map = new Map<string, { animeTitle: string; posterImage: string; items: SavedDownload[] }>();
     for (const d of downloads) {
@@ -104,7 +104,7 @@ export const DownloadsView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      {/* Top Breadcrumb Header */}
+      {}
       <div className="flex items-center gap-2">
         <button
           onClick={() => setActiveTab('home')}
@@ -139,7 +139,7 @@ export const DownloadsView: React.FC = () => {
             const sizeGb = (group.totalSizeMb / 1024).toFixed(1);
             return (
               <div key={group.animeId} className="space-y-4">
-                {/* Hero Header Card (Matching Desktop Screenshot 2 & 3) */}
+                {}
                 <div className="relative rounded-2xl bg-[#16161a] border border-white/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden">
                   <div className="flex items-center gap-4">
                     <img
@@ -182,7 +182,7 @@ export const DownloadsView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Subheader: Episodes Label & View Toggle */}
+                {}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
                     <span>Episodes</span>
@@ -205,7 +205,7 @@ export const DownloadsView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Episodes List / Grid */}
+                {}
                 <div className={viewMode === 'list' ? 'space-y-2' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'}>
                   {group.items.map((item) => {
                     const isSelected = selectedIds.has(item.id);
@@ -253,7 +253,7 @@ export const DownloadsView: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Actions on right */}
+                        {}
                         <div className="flex items-center gap-2 shrink-0">
                           <button
                             onClick={() => handlePlay(item.animeId, item.episodeNumber)}

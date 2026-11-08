@@ -36,7 +36,7 @@ export const MyListView: React.FC = () => {
   const [selectedFormat, setSelectedFormat] = useState('Any format');
   const [showStatsModal, setShowStatsModal] = useState(false);
 
-  // Resolve entries from local watchlist and liveCatalog
+  
   const resolvedList = watchlist
     .map(entry => {
       const anime = liveCatalog.find(a => a.id === entry.animeId);
@@ -60,7 +60,7 @@ export const MyListView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      {/* Profile & Sync Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-black/50 border border-[#74cf66]/20 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#74cf66] p-0.5 shrink-0 bg-black/60">
@@ -101,7 +101,7 @@ export const MyListView: React.FC = () => {
           </div>
         </div>
 
-        {/* Header Action Buttons */}
+        {}
         <div className="flex items-center gap-2 self-start sm:self-center">
           {currentUser && (
             <button
@@ -132,7 +132,7 @@ export const MyListView: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero Sign In Callout if not authenticated */}
+      {}
       {!currentUser && (
         <div className="p-5 rounded-3xl bg-black/60 border border-[#74cf66]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -154,7 +154,7 @@ export const MyListView: React.FC = () => {
         </div>
       )}
 
-      {/* Tabs: Watching, Completed, Planning, Paused, Dropped, All */}
+      {}
       <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto no-scrollbar">
         {(['Watching', 'Completed', 'Planning', 'Paused', 'Dropped', 'All'] as const).map((tab) => {
           const isActive = activeTab === tab;
@@ -182,7 +182,7 @@ export const MyListView: React.FC = () => {
         </button>
       </div>
 
-      {/* Filter Row: Any format, Filter by title */}
+      {}
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={selectedFormat}
@@ -207,7 +207,7 @@ export const MyListView: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid of anime items in Watchlist */}
+      {}
       {filteredEntries.length === 0 ? (
         <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 space-y-3">
           <Bookmark className="w-10 h-10 text-zinc-500 mx-auto" />
@@ -237,19 +237,19 @@ export const MyListView: React.FC = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
 
-                {/* Status badge */}
+                {}
                 <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-[10px] font-bold text-[#74cf66] border border-[#74cf66]/30">
                   {entry.status}
                 </div>
 
-                {/* Score badge */}
+                {}
                 {entry.score > 0 && (
                   <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-bold text-amber-300">
                     ★ {entry.score}
                   </div>
                 )}
 
-                {/* Quick play overlay on hover */}
+                {}
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -276,7 +276,7 @@ export const MyListView: React.FC = () => {
         </div>
       )}
 
-      {/* Stats Modal */}
+      {}
       {showStatsModal && userStats && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn font-sans">
           <div className="w-full max-w-md bg-[#0e0c18] border border-[#74cf66]/30 rounded-3xl p-6 shadow-2xl text-white space-y-4">

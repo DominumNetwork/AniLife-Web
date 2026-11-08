@@ -11,7 +11,7 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onFinish }) => {
 
   useEffect(() => {
     const startTime = Date.now();
-    const duration = 2200; // 2.2s loading animation
+    const duration = 2200; 
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -42,12 +42,12 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onFinish }) => {
       }`}
     >
       <div className="flex flex-col items-center justify-center space-y-6">
-        {/* Animated AniLife Logo GIF */}
+        {}
         <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
           <img
             src={imgSrc}
             onError={() => {
-              // Fallback to static clean logo
+              
               setImgSrc('/assets/images/Anilife-Logo.png');
             }}
             alt="AniLife"
@@ -55,7 +55,7 @@ export const AppIntro: React.FC<AppIntroProps> = ({ onFinish }) => {
           />
         </div>
 
-        {/* Animated Loading Bar */}
+        {}
         <div className="w-56 sm:w-64 flex flex-col items-center space-y-2">
           <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
             <div

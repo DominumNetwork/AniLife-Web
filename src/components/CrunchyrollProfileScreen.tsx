@@ -22,7 +22,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
-  // Edit/Add state
+  
   const [editingId, setEditingId] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [avatarInput, setAvatarInput] = useState(POPULAR_AVATARS[0].url);
@@ -92,7 +92,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
 
   return (
     <div className="fixed inset-0 z-[150] bg-[#000000] text-white flex flex-col items-center justify-center p-4 sm:p-8 select-none">
-      {/* Top Branding */}
+      {}
       <div className="absolute top-8 left-8 flex items-center gap-3">
         <img
           src="/assets/images/Anilife-Logo.png"
@@ -104,7 +104,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
         </span>
       </div>
 
-      {/* Main Selection View */}
+      {}
       {(mode === 'view' || mode === 'manage') && (
         <div className="w-full max-w-4xl flex flex-col items-center text-center space-y-10 animate-fadeIn">
           <div>
@@ -118,7 +118,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
             </p>
           </div>
 
-          {/* Profiles Grid */}
+          {}
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 max-w-3xl">
             {profiles.map((p) => (
               <div key={p.id} className="flex flex-col items-center space-y-3 group">
@@ -151,7 +151,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
               </div>
             ))}
 
-            {/* Add Profile Tile */}
+            {}
             {profiles.length < 6 && (
               <div className="flex flex-col items-center space-y-3 group">
                 <button
@@ -167,7 +167,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
             )}
           </div>
 
-          {/* Manage Button */}
+          {}
           <div className="pt-6">
             <button
               onClick={() => setMode(mode === 'manage' ? 'view' : 'manage')}
@@ -179,7 +179,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
         </div>
       )}
 
-      {/* PIN Unlock Prompt */}
+      {}
       {mode === 'pin' && targetPinProfile && (
         <div className="w-full max-w-sm flex flex-col items-center text-center space-y-6 animate-fadeIn">
           <button
@@ -198,7 +198,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
             <p className="text-xs text-zinc-400 mt-1">{targetPinProfile.name} is locked with a PIN</p>
           </div>
 
-          {/* 4 dots */}
+          {}
           <div className={`flex gap-3 my-2 ${pinError ? 'animate-shake' : ''}`}>
             {[0, 1, 2, 3].map((i) => (
               <div
@@ -214,7 +214,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
             ))}
           </div>
 
-          {/* Numeric keypad */}
+          {}
           <div className="grid grid-cols-3 gap-3 w-56">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
               <button
@@ -242,7 +242,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
         </div>
       )}
 
-      {/* Add / Edit Profile View */}
+      {}
       {(mode === 'add' || mode === 'edit') && (
         <div className="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-fadeIn">
           <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
@@ -258,7 +258,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
           </div>
 
           <form onSubmit={mode === 'add' ? saveAdd : saveEdit} className="space-y-5">
-            {/* Selected Avatar Preview */}
+            {}
             <div className="flex items-center gap-4">
               <img
                 src={avatarInput}
@@ -284,7 +284,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
               </div>
             </div>
 
-            {/* Choose Avatar from Real AniList Characters */}
+            {}
             <div className="space-y-2">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
                 Choose Anime Avatar
@@ -306,7 +306,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
               </div>
             </div>
 
-            {/* PIN Lock Option */}
+            {}
             <div className="space-y-2">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-[#74cf66]" />
@@ -322,7 +322,7 @@ export const CrunchyrollProfileScreen: React.FC<Props> = ({ onSelectProfile }) =
               />
             </div>
 
-            {/* Buttons */}
+            {}
             <div className="pt-4 flex items-center justify-between">
               {mode === 'edit' && editingId && profiles.length > 1 ? (
                 <button
